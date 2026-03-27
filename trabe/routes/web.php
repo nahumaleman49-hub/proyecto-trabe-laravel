@@ -14,6 +14,9 @@ use App\Http\Controllers\MaterialController;
 
 Route::get('/', function () {
     return view('home');
+<<<<<<< ramita
+});
+=======
 })->name('home');
 
 Route::get('/cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones');
@@ -26,3 +29,4 @@ Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'edit
 Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano-de-obra');
 Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales');
 
+>>>>>>> main
