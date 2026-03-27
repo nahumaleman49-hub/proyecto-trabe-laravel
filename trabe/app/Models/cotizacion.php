@@ -2,10 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class cotizacion extends Model
 {
     use HasFactory;
+    
+    protected $table = "cotizacion"; 
+    protected $primaryKey = "ID_cotizacion";
+    public $incrementing = true;
+    protected $keyType = "int";
+    
+    protected $ID_cotizacion;
+    protected $fk_id_proyecto;
+    protected $fecha;
+    protected $estado;
+    protected $total;
+    
+    protected $fillable = [
+        "ID_cotizacion",
+        "fk_id_proyecto",
+        "fecha",
+        "estado",
+        "total"
+    ];
+    
+    public $timestamps = false;
 }
