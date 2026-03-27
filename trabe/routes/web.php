@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\MaterialController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,5 +15,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
+
+Route::get('/cotizaciones', [CotizacionController::class, 'cotizaciones']);
+
+Route::get('/proveedores', [ProveedorController::class, 'proveedores']);
+
+Route::get('/materiales', [MaterialController::class, 'materiales']);
+
+Route::get('/mano-de-obra', [ManoObraController::class, 'mano-de-obra']);
+
