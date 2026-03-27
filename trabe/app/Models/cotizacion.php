@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Cotizacion extends Model
+class cotizacion extends Model
 {
 <<<<<<< ramita
     use HasFactory;
