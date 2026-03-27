@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class clientes extends Model
 {
+<<<<<<< ramita
     use HasFactory;
     
     protected $table = "clientes"; 
@@ -28,3 +29,23 @@ class clientes extends Model
     
     public $timestamps = false;
 }
+=======
+    protected $table = 'clientes';
+    protected $primaryKey = 'ID_cliente';
+    public $increment = true;
+    protected $keytipe = "int";
+    protected $fillable = [
+        'nombre',
+        'telefono',
+        'direccion'
+        ];
+        
+    public $timestamps = false;
+    
+    // Relaciones
+    public function proyectos()
+    {
+        return $this->hasMany(Proyecto::class, 'fk_id_cliente', 'ID_cliente');
+    }
+}
+>>>>>>> main
