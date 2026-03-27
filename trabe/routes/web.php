@@ -14,13 +14,15 @@ use App\Http\Controllers\MaterialController;
 
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
 
-Route::get('/cotizaciones', [CotizacionController::class, 'cotizaciones']);
+Route::get('/cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones');
 
-Route::get('/proveedores', [ProveedorController::class, 'proveedores']);
+Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores');
+Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');
+Route::get('/proveedores/{proveedor}', [ProveedorController::class, 'ver'])->name('proveedores.ver');
+Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
 
-Route::get('/materiales', [MaterialController::class, 'materiales']);
-
-Route::get('/mano-de-obra', [ManoObraController::class, 'mano-de-obra']);
+Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano-de-obra');
+Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales');
 
