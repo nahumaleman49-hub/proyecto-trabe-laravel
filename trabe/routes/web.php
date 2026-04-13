@@ -17,6 +17,11 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones');
+Route::get('/cotizaciones/nueva', [CotizacionController::class, 'create'])->name('cotizaciones.nueva');
+Route::post('/cotizaciones/guardar', [CotizacionController::class, 'store'])->name('cotizaciones.guardar');
+Route::get('/cotizaciones/seleccion-vista', [CotizacionController::class, 'seleccionVista'])->name('cotizaciones.seleccion-vista');
+Route::get('/cotizaciones/vista-cliente', [CotizacionController::class, 'vistaCliente'])->name('cotizaciones.vista-cliente');
+Route::get('/cotizaciones/vista-ingeniero', [CotizacionController::class, 'vistaIngeniero'])->name('cotizaciones.vista-ingeniero');
 
 Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores');
 Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');
