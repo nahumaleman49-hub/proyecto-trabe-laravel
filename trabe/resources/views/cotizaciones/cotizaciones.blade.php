@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QOSTO - Cotizaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50">
@@ -33,7 +34,7 @@
                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Crear Nueva Cotización</h2>
                     <p class="text-slate-600 text-lg">Genera una cotización detallada para tu próximo proyecto de construcción</p>
                 </div>
-                
+                    <a href="{{ route('cotizaciones.nueva') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                     Nueva Cotización
                 </a>
@@ -59,11 +60,11 @@
                     <tbody>
                         @forelse($cotizacion as $cotizacion)
                             <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                                <td class="py-4 px-4 font-mono text-sm text-slate-600">{{ $cotizacion->id }}</td>
-                                <td class="py-4 px-4 font-semibold text-slate-800">{{ $cotizacion->project_name }}</td>
-                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->client }}</td>
-                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->date }}</td>
-                                <td class="py-4 px-4 font-bold text-slate-700">{{ $cotizacion->value }}</td>
+                                <td class="py-4 px-4 font-mono text-sm text-slate-600">{{ $cotizacion->ID_cotizacion }}</td>
+                                <td class="py-4 px-4 font-semibold text-slate-800">{{ $cotizacion->fk_id_proyecto }}</td>
+                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->fecha }}</td>
+                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->estado }}</td>
+                                <td class="py-4 px-4 font-bold text-slate-700">{{ $cotizacion->total }}</td>
                                 <td class="py-4 px-4">
                                     @php
                                         $statusColors = [
