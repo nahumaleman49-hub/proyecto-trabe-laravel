@@ -72,14 +72,14 @@
                                             'Pendiente' => 'bg-yellow-100 text-yellow-700',
                                             'En Revisión' => 'bg-blue-100 text-blue-700',
                                         ];
-                                        $colorClass = $statusColors[$quote->status] ?? 'bg-slate-100 text-slate-700';
+                                        $colorClass = $statusColors[$cotizacion->status] ?? 'bg-slate-100 text-slate-700';
                                     @endphp
                                     <span class="px-3 py-1 rounded-full text-sm font-medium {{ $colorClass }}">
-                                        {{ $quote->status }}
+                                        {{ $cotizacion->status }}
                                     </span>
                                 </td>
                                 <td class="py-4 px-4">
-                                    <a href="{{ route('quotes.show', $quote->id) }}" class="text-slate-600 hover:text-slate-800 font-medium">
+                                    <a href="{{ route('cotizaciones', $cotizacion->ID_cotizacion) }}" class="text-slate-600 hover:text-slate-800 font-medium">
                                         Ver
                                     </a>
                                 </td>

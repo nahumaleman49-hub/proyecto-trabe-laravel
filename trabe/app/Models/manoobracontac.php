@@ -27,4 +27,9 @@ class manoobracontac extends Model
     ];
     
     public $timestamps = false;
+    
+     public function detalles()
+    {
+        return $this->hasMany(detallemanoobra::class, 'fk_id_mano_obra_contac', 'ID_mano_obra_contac');
+    }
 }

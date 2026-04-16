@@ -29,4 +29,9 @@ class detallemanoobra extends Model
     ];
     
     public $timestamps = false;
+
+    public function trabajador()
+    {
+        return $this->belongsTo(manoobracontac::class, 'fk_id_mano_obra_contac', 'ID_mano_obra_contac');
+    }
 }

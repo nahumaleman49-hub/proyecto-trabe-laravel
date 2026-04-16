@@ -72,13 +72,27 @@
                 </a>
 
                 {{-- Mano de Obra --}}
-                <a href="{{ route('mano-de-obra') }}" class="card" data-path="labour">
+                <a href="{{ route('mano.de.obra') }}" class="card" data-path="labour">
                     <div class="card-inner">
                         <div class="icon-bg gradient-2">
                             <i data-lucide="users" class="icon"></i>
                         </div>
                         <h2 class="card-title">Mano de Obra</h2>
                         <p class="card-desc">Contrata trabajadores calificados</p>
+                        <div class="card-footer">
+                            <span>Explorar</span>
+                            <i data-lucide="arrow-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                </a>
+                <!-- Clientes -->
+                <a href="{{ route('clientes') }}" class="card" data-path="/clientes">
+                    <div class="card-inner">
+                        <div class="icon-bg gradient-2"> <!-- Puedes usar gradient-1 si no tienes más -->
+                            <i data-lucide="users" class="icon"></i>
+                        </div>
+                        <h2 class="card-title">Clientes</h2>
+                        <p class="card-desc">Administra tus clientes</p>
                         <div class="card-footer">
                             <span>Explorar</span>
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
