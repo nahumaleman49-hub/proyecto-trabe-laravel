@@ -4,381 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QOSTO - Materiales</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 text-slate-800">
 
-    @php
-        // Definición de categorías (puede venir desde el controlador)
-        $categorias = [
-            [
-                'id' => 'estructurales',
-                'nombre' => 'Materiales Estructurales',
-                'icono' => '🏗️',
-                'subcategorias' => [
-                    [
-                        'id' => 'concreto',
-                        'nombre' => 'Concreto y Cemento',
-                        'materiales' => [
-                            ['nombre' => 'Concreto Premezclado f\'c=250', 'unidad' => 'm³', 'proveedores' => [
-                                ['proveedor' => 'Concretos CEMEX', 'precio' => 2200, 'entrega' => '24h'],
-                                ['proveedor' => 'Soluciones en Concreto', 'precio' => 2150, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Cemento Portland Gris CPC 30R', 'unidad' => 'bulto 50kg', 'proveedores' => [
-                                ['proveedor' => 'CEMEX', 'precio' => 195, 'entrega' => '24h'],
-                                ['proveedor' => 'Cementos Moctezuma', 'precio' => 190, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Grava 3/4"', 'unidad' => 'm³', 'proveedores' => [
-                                ['proveedor' => 'Agregados del Valle', 'precio' => 350, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Arena de Río', 'unidad' => 'm³', 'proveedores' => [
-                                ['proveedor' => 'Agregados del Valle', 'precio' => 280, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ],
-                    [
-                        'id' => 'acero',
-                        'nombre' => 'Acero y Metales',
-                        'materiales' => [
-                            ['nombre' => 'Varilla Corrugada 3/8"', 'unidad' => '6m', 'proveedores' => [
-                                ['proveedor' => 'Aceros y Metales', 'precio' => 85, 'entrega' => '24h'],
-                                ['proveedor' => 'Distribuidora de Acero', 'precio' => 82, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Varilla Corrugada 1/2"', 'unidad' => '6m', 'proveedores' => [
-                                ['proveedor' => 'Aceros y Metales', 'precio' => 145, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Viga IPR 6"', 'unidad' => '6m', 'proveedores' => [
-                                ['proveedor' => 'Aceros y Metales', 'precio' => 2800, 'entrega' => '72h']
-                            ]],
-                            ['nombre' => 'Alambrón', 'unidad' => 'kg', 'proveedores' => [
-                                ['proveedor' => 'Ferretería Industrial', 'precio' => 18, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Malla Electrosoldada 6x6-10/10', 'unidad' => 'rollo', 'proveedores' => [
-                                ['proveedor' => 'Aceros y Metales', 'precio' => 580, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ],
-                    [
-                        'id' => 'madera',
-                        'nombre' => 'Madera y Derivados',
-                        'materiales' => [
-                            ['nombre' => 'Polines de Pino 4x4"', 'unidad' => '3.6m', 'proveedores' => [
-                                ['proveedor' => 'Maderas del Norte', 'precio' => 220, 'entrega' => '24h'],
-                                ['proveedor' => 'Madera Premium', 'precio' => 215, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Triplay de Pino 16mm', 'unidad' => '1.22x2.44m', 'proveedores' => [
-                                ['proveedor' => 'Maderas del Norte', 'precio' => 485, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Duela de Pino', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Madera Premium', 'precio' => 380, 'entrega' => '72h']
-                            ]],
-                            ['nombre' => 'MDF 15mm', 'unidad' => '1.22x2.44m', 'proveedores' => [
-                                ['proveedor' => 'Maderas del Norte', 'precio' => 420, 'entrega' => '48h']
-                            ]]
-                        ]
-                    ]
-                ]
-            ],
-            [
-                'id' => 'albanileria',
-                'nombre' => 'Albañilería',
-                'icono' => '🧱',
-                'subcategorias' => [
-                    [
-                        'id' => 'block',
-                        'nombre' => 'Block y Tabiques',
-                        'materiales' => [
-                            ['nombre' => 'Block de Concreto 15x20x40', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Blockera Central', 'precio' => 18, 'entrega' => '24h'],
-                                ['proveedor' => 'Materiales GAMA', 'precio' => 17.5, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Tabique Rojo Recocido 7x14x28', 'unidad' => 'millar', 'proveedores' => [
-                                ['proveedor' => 'Ladrillera San Miguel', 'precio' => 4200, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Adocreto 10x20', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Blockera Central', 'precio' => 145, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ],
-                    [
-                        'id' => 'recubrimientos',
-                        'nombre' => 'Recubrimientos',
-                        'materiales' => [
-                            ['nombre' => 'Loseta Cerámica 33x33', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Cerámicas Monterrey', 'precio' => 180, 'entrega' => '48h'],
-                                ['proveedor' => 'Azulejos y Pisos', 'precio' => 175, 'entrega' => '72h']
-                            ]],
-                            ['nombre' => 'Piso Porcelánico 60x60', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Porcelanite', 'precio' => 420, 'entrega' => '72h']
-                            ]],
-                            ['nombre' => 'Azulejo para Baño 20x30', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Azulejos y Pisos', 'precio' => 220, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Mármol Blanco', 'unidad' => 'm²', 'proveedores' => [
-                                ['proveedor' => 'Mármoles Finos', 'precio' => 850, 'entrega' => '7 días']
-                            ]]
-                        ]
-                    ]
-                ]
-            ],
-            [
-                'id' => 'acabados',
-                'nombre' => 'Acabados',
-                'icono' => '🎨',
-                'subcategorias' => [
-                    [
-                        'id' => 'pintura',
-                        'nombre' => 'Pinturas',
-                        'materiales' => [
-                            ['nombre' => 'Pintura Vinílica Blanca', 'unidad' => 'cubeta 19L', 'proveedores' => [
-                                ['proveedor' => 'Comex', 'precio' => 680, 'entrega' => '24h'],
-                                ['proveedor' => 'Sherwin Williams', 'precio' => 720, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Esmalte Alquidálico', 'unidad' => 'galón', 'proveedores' => [
-                                ['proveedor' => 'Comex', 'precio' => 485, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Impermeabilizante Acrílico', 'unidad' => 'cubeta 19L', 'proveedores' => [
-                                ['proveedor' => 'Comex', 'precio' => 920, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ],
-                    [
-                        'id' => 'yeso',
-                        'nombre' => 'Yeso y Acabados',
-                        'materiales' => [
-                            ['nombre' => 'Placa de Yeso 1.22x2.44x12.7mm', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Tablaroca USG', 'precio' => 285, 'entrega' => '48h'],
-                                ['proveedor' => 'Materiales GAMA', 'precio' => 275, 'entrega' => '72h']
-                            ]],
-                            ['nombre' => 'Perfil Metálico PTR', 'unidad' => '3.6m', 'proveedores' => [
-                                ['proveedor' => 'Perfiles y Acero', 'precio' => 95, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Pasta para Juntas', 'unidad' => 'cubeta 27kg', 'proveedores' => [
-                                ['proveedor' => 'Tablaroca USG', 'precio' => 380, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ]
-                ]
-            ],
-            [
-                'id' => 'instalaciones',
-                'nombre' => 'Instalaciones',
-                'icono' => '🔧',
-                'subcategorias' => [
-                    [
-                        'id' => 'hidraulica',
-                        'nombre' => 'Hidráulica',
-                        'materiales' => [
-                            ['nombre' => 'Tubo PVC Hidráulico 1/2"', 'unidad' => '6m', 'proveedores' => [
-                                ['proveedor' => 'Tuberías del Norte', 'precio' => 68, 'entrega' => '24h'],
-                                ['proveedor' => 'Hidráulicos SA', 'precio' => 65, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Tubo PVC Hidráulico 3/4"', 'unidad' => '6m', 'proveedores' => [
-                                ['proveedor' => 'Tuberías del Norte', 'precio' => 95, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Codo PVC 1/2" x 90°', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Hidráulicos SA', 'precio' => 8, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Llave de Paso 1/2"', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Hidráulicos SA', 'precio' => 145, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ],
-                    [
-                        'id' => 'electrica',
-                        'nombre' => 'Eléctrica',
-                        'materiales' => [
-                            ['nombre' => 'Cable THW Cal. 12', 'unidad' => 'rollo 100m', 'proveedores' => [
-                                ['proveedor' => 'Eléctrica Total', 'precio' => 1850, 'entrega' => '24h'],
-                                ['proveedor' => 'Cables y Conductores', 'precio' => 1820, 'entrega' => '48h']
-                            ]],
-                            ['nombre' => 'Tubo Conduit 3/4"', 'unidad' => '3m', 'proveedores' => [
-                                ['proveedor' => 'Eléctrica Total', 'precio' => 52, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Chalupa Octagonal', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Eléctrica Total', 'precio' => 12, 'entrega' => '24h']
-                            ]],
-                            ['nombre' => 'Apagador Sencillo', 'unidad' => 'pza', 'proveedores' => [
-                                ['proveedor' => 'Material Eléctrico', 'precio' => 35, 'entrega' => '24h']
-                            ]]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+<div class="container mx-auto px-4 py-8 max-w-5xl">
 
-        // Obtener parámetros de la URL
-        $categoriaId = request()->query('categoria');
-        $subcategoriaId = request()->query('subcategoria');
+    {{-- 1. LÓGICA DE BREADCRUMBS (Navegación dinámica) --}}
+    <nav class="text-sm text-slate-500 mb-6 flex items-center">
+        <a href="{{ url('/materiales') }}" class="hover:text-blue-600 transition-colors">Materiales</a>
+        @if($categoriaId)
+            @php $catActual = $categorias->where('ID_Categoria', $categoriaId)->first(); @endphp
+            @if($catActual)
+                <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                <a href="{{ url('/materiales?categoria='.$categoriaId) }}" class="hover:text-blue-600 transition-colors">{{ $catActual->nombre }}</a>
+            @endif
+        @endif
+    </nav>
 
-        // Función auxiliar para encontrar subcategoría
-        $categoriaActual = null;
-        $subcategoriaActual = null;
-        if ($categoriaId) {
-            foreach ($categorias as $cat) {
-                if ($cat['id'] === $categoriaId) {
-                    $categoriaActual = $cat;
-                    break;
-                }
-            }
-        }
-        if ($subcategoriaId && $categoriaActual) {
-            foreach ($categoriaActual['subcategorias'] as $sub) {
-                if ($sub['id'] === $subcategoriaId) {
-                    $subcategoriaActual = $sub;
-                    break;
-                }
-            }
-        }
-    @endphp
-
-    {{-- Vista de categorías principales --}}
-    @if(!$categoriaId)
-    <div class="min-h-screen bg-slate-50">
-        <div class="relative h-64 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
-            <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center text-white">
-                    <i data-lucide="box" class="w-16 h-16 mx-auto mb-4"></i>
-                    <h1 class="text-5xl font-bold mb-2">Materiales</h1>
-                    <p class="text-xl text-slate-300">Catálogo completo de materiales de construcción</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="container mx-auto px-4 py-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
-                <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                Volver al Inicio
-            </a>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @foreach($categorias as $categoria)
-                <a href="?categoria={{ $categoria['id'] }}" class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group block">
-                    <div class="text-6xl mb-4">{{ $categoria['icono'] }}</div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-3 group-hover:text-slate-700">{{ $categoria['nombre'] }}</h2>
-                    <p class="text-slate-600 mb-4">{{ count($categoria['subcategorias']) }} categorías disponibles</p>
-                    <div class="flex items-center text-slate-600 group-hover:text-slate-800">
-                        <span class="mr-2">Ver materiales</span>
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+    {{-- CASO A: VISTA DE DETALLE DE MATERIAL --}}
+    @if($materialId)
+        @php 
+            $material = \App\Models\materiales::with('preciosHistoricos.proveedor')->where('ID_Material', $materialId)->first(); 
+        @endphp
+        
+        @if($material)
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-3xl font-bold text-slate-900 mb-2">{{ $material->nombre }}</h1>
+                        <p class="text-slate-500">Unidad: <span class="font-semibold">{{ $material->medidas }}</span> | Código: {{ $material->codigo }}</p>
                     </div>
-                </a>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    {{-- Vista de subcategorías --}}
-    @elseif($categoriaActual && !$subcategoriaId)
-    <div class="min-h-screen bg-slate-50">
-        <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
-            <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center text-white">
-                    <div class="text-5xl mb-3">{{ $categoriaActual['icono'] }}</div>
-                    <h1 class="text-4xl font-bold">{{ $categoriaActual['nombre'] }}</h1>
                 </div>
-            </div>
-        </div>
 
-        <div class="container mx-auto px-4 py-8">
-            <a href="{{ route('materiales') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-6">
-                <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                Volver a Categorías
-            </a>
-
-            {{-- Breadcrumb --}}
-            <div class="flex items-center gap-2 text-sm text-slate-600 mb-6">
-                <a href="{{ route('materiales') }}" class="hover:text-slate-800">Materiales</a>
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                <span class="font-semibold text-slate-800">{{ $categoriaActual['nombre'] }}</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($categoriaActual['subcategorias'] as $sub)
-                <a href="?categoria={{ $categoriaActual['id'] }}&subcategoria={{ $sub['id'] }}" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group block">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-3 group-hover:text-slate-700">{{ $sub['nombre'] }}</h3>
-                    <p class="text-slate-600 mb-4">{{ count($sub['materiales']) }} materiales disponibles</p>
-                    <div class="flex items-center text-slate-600 group-hover:text-slate-800">
-                        <span class="mr-2">Ver opciones</span>
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </div>
-                </a>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    {{-- Vista de materiales (detalle) --}}
-    @elseif($subcategoriaActual)
-    <div class="min-h-screen bg-slate-50">
-        <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
-            <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center text-white">
-                    <h1 class="text-4xl font-bold">{{ $subcategoriaActual['nombre'] }}</h1>
-                    <p class="text-slate-300">{{ $categoriaActual['nombre'] }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="container mx-auto px-4 py-8">
-            <a href="?categoria={{ $categoriaActual['id'] }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-6">
-                <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                Volver a Subcategorías
-            </a>
-
-            {{-- Breadcrumb --}}
-            <div class="flex items-center gap-2 text-sm text-slate-600 mb-6">
-                <a href="{{ route('materiales') }}" class="hover:text-slate-800">Materiales</a>
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                <a href="?categoria={{ $categoriaActual['id'] }}" class="hover:text-slate-800">{{ $categoriaActual['nombre'] }}</a>
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                <span class="font-semibold text-slate-800">{{ $subcategoriaActual['nombre'] }}</span>
-            </div>
-
-            <div class="space-y-4">
-                @foreach($subcategoriaActual['materiales'] as $material)
-                <div class="bg-white rounded-xl p-6 shadow-lg">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <h3 class="text-2xl font-bold text-slate-800 mb-1">{{ $material['nombre'] }}</h3>
-                            <p class="text-slate-600">Unidad: {{ $material['unidad'] }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-slate-600 mb-1">Desde</p>
-                            <p class="text-3xl font-bold text-slate-700">
-                                ${{ number_format(min(array_column($material['proveedores'], 'precio')), 0) }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 rounded-lg p-4">
-                        <p class="text-sm font-semibold text-slate-700 mb-3">{{ count($material['proveedores']) }} proveedor(es) disponible(s):</p>
-                        <div class="space-y-2">
-                            @foreach($material['proveedores'] as $proveedor)
-                            <div class="bg-white rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <p class="font-semibold text-slate-800">{{ $proveedor['proveedor'] }}</p>
-                                    <p class="text-sm text-slate-600">Entrega: {{ $proveedor['entrega'] }}</p>
-                                </div>
-                                <div class="text-right mt-2 sm:mt-0">
-                                    <p class="text-2xl font-bold text-slate-700">${{ number_format($proveedor['precio'], 0) }}</p>
-                                    <button class="text-sm text-slate-600 hover:text-slate-800 font-medium mt-1">Seleccionar</button>
-                                </div>
+                <div class="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                    <p class="font-semibold text-slate-700 mb-4">{{ $material->preciosHistoricos->count() }} proveedor(es) disponible(s):</p>
+                    
+                    @foreach($material->preciosHistoricos as $precio)
+                        <div class="flex justify-between items-center p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
+                            <div>
+                                <p class="font-bold text-lg text-slate-800">{{ $precio->proveedor->nombre }}</p>
+                                <p class="text-sm text-slate-500">Contacto: {{ $precio->proveedor->nombre_contacto }}</p>
                             </div>
-                            @endforeach
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-slate-900 mb-1">${{ number_format($precio->precio, 2) }}</p>
+                                <button class="text-blue-600 text-sm font-bold hover:text-blue-800 transition-colors">Seleccionar</button>
+                            </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
-        </div>
-    </div>
-    @endif
+        @else
+            <p class="text-red-500">Material no encontrado.</p>
+        @endif
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
-    </script>
+    {{-- CASO B: LISTA DE MATERIALES POR CATEGORÍA --}}
+    @elseif($categoriaId && isset($catActual))
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-bold text-slate-900 mb-3">{{ $catActual->nombre }}</h2>
+            <p class="text-slate-500">{{ $catActual->descripcion }}</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @foreach($catActual->materiales as $mat)
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-slate-800 mb-1">{{ $mat->nombre }}</h3>
+                    <p class="text-slate-500 text-sm mb-6">Código: {{ $mat->codigo }}</p>
+                    <a href="{{ url('/materiales?categoria='.$categoriaId.'&material='.$mat->ID_Material) }}" 
+                       class="text-blue-600 font-semibold flex items-center hover:text-blue-800 transition-colors">
+                        Ver opciones <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- CASO C: VISTA PRINCIPAL DE CATEGORÍAS --}}
+@else
+    <div class="flex justify-between items-center mb-16 mt-8">
+        <div class="text-left">
+            <h1 class="text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Materiales</h1>
+            <p class="text-lg text-slate-500">Catálogo completo de materiales de construcción</p>
+        </div>
+        <a href="{{ url('/materiales/crear') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center transition-all transform hover:scale-105">
+            <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+            Nuevo Material
+        </a>
+    </div>
+    
+    ```
+
+### 2. Crear la nueva ruta en `routes/web.php`
+Necesitamos decirle a Laravel que responda cuando alguien haga clic en ese botón. Abre tu archivo de rutas y añade estas dos líneas:
+
+```php
+use App\Http\Controllers\MaterialController;
+
+// Ruta para mostrar el formulario
+Route::get('/materiales/crear', [MaterialController::class, 'create']);
+
+// Ruta para guardar el material en la base de datos
+Route::post('/materiales/guardar', [MaterialController::class, 'store']);
+
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>

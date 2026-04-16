@@ -28,6 +28,7 @@ Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('p
 Route::get('/proveedores/{proveedor}', [ProveedorController::class, 'ver'])->name('proveedores.ver');
 Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
 
+
 Route::get('/mano-de-obra', [ManoObraController::class, 'index'])->name('mano.de.obra');
 Route::get('/mano-de-obra/agregar', [ManoObraController::class, 'agregar'])->name('mano.de.obra.agregar');
 Route::post('/mano-de-obra', [ManoObraController::class, 'guardar'])->name('mano.de.obra.guardar');
@@ -39,5 +40,10 @@ Route::get('/clientes/{id}/modificar', [ClienteController::class, 'editar'])->na
 Route::put('/clientes/{id}', [ClienteController::class, 'actualizar'])->name('clientes.actualizar');
 Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('clientes.eliminar');
 
+Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano-de-obra');
+
+
 Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales');
+Route::get('/materiales/crear', [MaterialController::class, 'create']);
+Route::post('/materiales/guardar', [MaterialController::class, 'store']);
 
