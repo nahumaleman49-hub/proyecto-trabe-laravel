@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProyectoController;
 
 /*
 |-----------------------------------------------------------------------
@@ -43,6 +44,12 @@ Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('c
 
 Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano.de.obra');
 
+Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
+Route::get('/proyectos/agregar', [ProyectoController::class, 'agregar'])->name('proyectos.agregar');
+Route::post('/proyectos', [ProyectoController::class, 'guardar'])->name('proyectos.guardar');
+Route::get('/proyectos/{id}/modificar', [ProyectoController::class, 'editar'])->name('proyectos.modificar');
+Route::put('/proyectos/{id}', [ProyectoController::class, 'actualizar'])->name('proyectos.actualizar');
+Route::delete('/proyectos/{id}', [ProyectoController::class, 'eliminar'])->name('proyectos.eliminar');
 
 Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
 Route::get('/categorias/agregar', [CategoriaController::class, 'agregar'])->name('categorias.agregar');

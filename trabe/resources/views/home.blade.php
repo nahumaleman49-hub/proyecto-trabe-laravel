@@ -19,7 +19,7 @@
 
             {{-- Área de marca --}}
             <div class="brand-area">
-                <img src="{{ asset('img/logo.png') }}" alt="Trabe Ingeniería" class="logo-img">
+                <img src="{{ asset('/css/logo.png') }}" alt="Trabe Ingeniería" class="logo-img">
                 <h1 class="main-title">QOSTO</h1>
                 <p class="tagline">Tu puerta de acceso a la excelencia en construcción, diseño y arquitectura</p>
             </div>
@@ -93,6 +93,20 @@
                         </div>
                         <h2 class="card-title">Clientes</h2>
                         <p class="card-desc">Administra tus clientes</p>
+                        <div class="card-footer">
+                            <span>Explorar</span>
+                            <i data-lucide="arrow-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                </a>
+                <!-- proyectos -->
+                <a href="{{ route('proyectos.index') }}" class="card" data-path="/proyectos">
+                    <div class="card-inner">
+                        <div class="icon-bg gradient-2"> <!-- Puedes usar gradient-1 si no tienes más -->
+                            <i data-lucide="briefcase" class="icon"></i>
+                        </div>
+                        <h2 class="card-title">Proyectos</h2>
+                        <p class="card-desc">Administra tus proyectos</p>
                         <div class="card-footer">
                             <span>Explorar</span>
                             <i data-lucide="arrow-right" class="arrow-icon"></i>

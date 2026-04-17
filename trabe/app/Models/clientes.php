@@ -21,7 +21,7 @@ class clientes extends Model
     public $timestamps = false;
     
     public function proyectos()
-    {
-        return $this->hasMany(Proyecto::class, 'fk_id_cliente', 'ID_cliente');
-    }
+{
+    return $this->hasMany(proyecto::class, 'fk_id_cliente', 'ID_cliente');
+}
 }
