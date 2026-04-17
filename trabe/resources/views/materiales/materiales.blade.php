@@ -46,7 +46,7 @@
                             </div>
                             <input type="text" name="buscar" value="{{ request('buscar') }}" 
                                    class="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 bg-slate-50" 
-                                   placeholder="Buscar material">
+                                   placeholder="Buscar material o código...">
                             
                             @if(request('buscar'))
                                 <a href="{{ route('materiales.index') }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500 transition-colors" title="Limpiar búsqueda">
