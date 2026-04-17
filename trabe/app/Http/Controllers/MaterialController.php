@@ -2,44 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\materiales as Material;
+use App\Models\categoria as Categoria;
 use Illuminate\Http\Request;
-use App\Models\materiales;
-use App\Models\categoria;
 
 class MaterialController extends Controller
 {
-    public function index(Request $request)
-{
-    // Obtenemos todas las categorías con sus materiales y precios
-    $categorias = \App\Models\Categoria::with(['materiales.preciosHistoricos.proveedor'])->get();
-    
-    // Detectamos si el usuario seleccionó una categoría o material específico por la URL
-    $categoriaId = $request->query('categoria');
-    $materialId = $request->query('material');
+    public function index()
+    {
+        // Traemos los materiales con su categoría para evitar el error N+1 y null properties
+        $materiales = Material::with('categoria')->get();
+        return view('materiales.materiales', compact('materiales'));
+    }
 
-    return view('materiales', compact('categorias', 'categoriaId', 'materialId'));
+    public function agregar()
+    {
+        $categorias = Categoria::all(); // Traemos las categorías para el select
+        return view('materiales.materialesagregar', compact('categorias'));
+    }
+
+    public function guardar(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'codigo' => 'required|string|max:20',
+            'medidas' => 'required|string|max:20',
+            'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
+        ]);
+
+        Material::create($request->all()); 
+
+        return redirect()->route('materiales.index')->with('success', 'Material agregado correctamente.');
+    }
+
+    public function editar($id)
+    {
+        $material = Material::findOrFail($id);
+        $categorias = Categoria::all();
+        return view('materiales.materialesagregar', compact('material', 'categorias'));
+    }
+
+    public function actualizar(Request $request, $id)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'codigo' => 'required|string|max:20',
+            'medidas' => 'required|string|max:20',
+            'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
+        ]);
+
+        $material = Material::findOrFail($id);
+        $material->update($request->all()); 
+
+        return redirect()->route('materiales.index')->with('success', 'Material actualizado correctamente.');
+    }
+
+    public function eliminar($id)
+    {
+        $material = Material::findOrFail($id);
+        $material->delete();
+
+        return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
+    }
 }
-
-public function create() {
-    $categorias = \App\Models\categoria::all(); // Obtenemos las categorías para el select
-    return view('materiales_crear', compact('categorias'));
-}
-
-public function store(Request $request) {
-    // Validamos los datos según las columnas de tu tabla materiales
-    $request->validate([
-        'nombre' => 'required',
-        'codigo' => 'required',
-        'medidas' => 'required',
-        'fk_id_categoria' => 'required'
-    ]);
-
-    // Creamos el registro
-    \App\Models\materiales::create($request->all());
-
-    return redirect('/materiales')->with('success', 'Material agregado correctamente');
-}
-protected $fillable = ['nombre', 'codigo', 'medidas', 'fk_id_categoria', 'ficha_tecnica'];
-}
-
-

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ClienteController;
@@ -40,10 +41,19 @@ Route::get('/clientes/{id}/modificar', [ClienteController::class, 'editar'])->na
 Route::put('/clientes/{id}', [ClienteController::class, 'actualizar'])->name('clientes.actualizar');
 Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('clientes.eliminar');
 
-Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano-de-obra');
+Route::get('/mano-de-obra', [ManoDeObraController::class, 'index'])->name('mano.de.obra');
 
 
-Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales');
-Route::get('/materiales/crear', [MaterialController::class, 'create']);
-Route::post('/materiales/guardar', [MaterialController::class, 'store']);
+Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
+Route::get('/categorias/agregar', [CategoriaController::class, 'agregar'])->name('categorias.agregar');
+Route::post('/categorias/guardar', [CategoriaController::class, 'guardar'])->name('categorias.guardar');
+Route::get('/categorias/editar/{id}', [CategoriaController::class, 'editar'])->name('categorias.editar');
+Route::put('/categorias/actualizar/{id}', [CategoriaController::class, 'actualizar'])->name('categorias.actualizar');
+Route::delete('/categorias/eliminar/{id}', [CategoriaController::class, 'eliminar'])->name('categorias.eliminar');
 
+Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales.index');
+Route::get('/materiales/agregar', [MaterialController::class, 'agregar'])->name('materiales.agregar');
+Route::post('/materiales/guardar', [MaterialController::class, 'guardar'])->name('materiales.guardar');
+Route::get('/materiales/editar/{id}', [MaterialController::class, 'editar'])->name('materiales.editar');
+Route::put('/materiales/actualizar/{id}', [MaterialController::class, 'actualizar'])->name('materiales.actualizar');
+Route::delete('/materiales/eliminar/{id}', [MaterialController::class, 'eliminar'])->name('materiales.eliminar');
