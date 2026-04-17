@@ -32,19 +32,52 @@
         @endif
 
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Agregar Nuevo Material</h2>
-                    <p class="text-slate-600 text-lg">Registra un nuevo material en tu base de datos</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Gestión de Inventario</h2>
+                    <p class="text-slate-600 text-lg">Administra tus materiales y sus clasificaciones</p>
                 </div>
-                <a href="{{ route('materiales.agregar') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
-                    <i data-lucide="plus" class="w-5 h-5"></i> Nuevo Material
-                </a>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <form action="{{ route('materiales.index') }}" method="GET" class="flex-grow sm:flex-grow-0 sm:min-w-[300px]">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                            </div>
+                            <input type="text" name="buscar" value="{{ request('buscar') }}" 
+                                   class="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 bg-slate-50" 
+                                   placeholder="Buscar material">
+                            
+                            @if(request('buscar'))
+                                <a href="{{ route('materiales.index') }}" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500 transition-colors" title="Limpiar búsqueda">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+
+                    <a href="{{ route('categorias.index') }}" class="inline-flex items-center justify-center gap-2 border border-slate-300 text-slate-700 px-6 py-3 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+                        <i data-lucide="layers" class="w-5 h-5 text-slate-500"></i> 
+                        <span class="hidden sm:inline">Categorías</span>
+                    </a>
+
+                    <a href="{{ route('materiales.agregar') }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-shadow whitespace-nowrap">
+                        <i data-lucide="plus" class="w-5 h-5"></i> 
+                        Nuevo Material
+                    </a>
+                </div>
             </div>
         </div>
 
         <div class="bg-white rounded-2xl p-8 shadow-lg">
             <h2 class="text-3xl font-bold text-slate-800 mb-6">Lista de Materiales</h2>
+            
+            @if(request('buscar'))
+                <p class="text-slate-600 mb-4">
+                    Mostrando resultados para: <span class="font-semibold text-slate-800">"{{ request('buscar') }}"</span>
+                </p>
+            @endif
+
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -53,6 +86,7 @@
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Nombre</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Unidad</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Categoría</th>
+                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Precio</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Acciones</th>
                         </tr>
                     </thead>
@@ -63,6 +97,7 @@
                                 <td class="py-4 px-4 font-semibold text-slate-800">{{ $material->nombre }}</td>
                                 <td class="py-4 px-4 text-slate-600">{{ $material->medidas }}</td>
                                 <td class="py-4 px-4 text-slate-600">{{ $material->categoria->nombre ?? 'Sin Categoría' }}</td>
+                                <td class="py-4 px-4 text-slate-600">${{ number_format($material->precio, 2) }}</td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-3">
                                         <a href="{{ route('materiales.editar', $material->ID_Material) }}" class="text-slate-600 hover:text-slate-800 transition-all" title="Editar">
@@ -80,7 +115,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-500">No hay materiales registrados.</td>
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    @if(request('buscar'))
+                                        No se encontraron materiales que coincidan con "{{ request('buscar') }}".
+                                    @else
+                                        No hay materiales registrados.
+                                    @endif
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -89,6 +130,7 @@
         </div>
     </div>
 </div>
+
 <script>lucide.createIcons();</script>
 </body>
 </html>
