@@ -46,7 +46,7 @@ class MaterialController extends Controller
 
         Material::create($request->all()); 
 
-        return redirect()->route('materiales.index')->with('success', 'Material agregado correctamente.');
+        return redirect()->route('materiales.index')->with('success', 'Material agregado.');
     }
 
     public function editar($id)
@@ -79,4 +79,5 @@ class MaterialController extends Controller
 
         return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
     }
+    
 }

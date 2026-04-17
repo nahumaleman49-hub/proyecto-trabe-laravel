@@ -7,6 +7,7 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\ProveedorController;
 
 /*
 |-----------------------------------------------------------------------
@@ -29,6 +30,7 @@ Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveed
 Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');
 Route::get('/proveedores/{proveedor}', [ProveedorController::class, 'ver'])->name('proveedores.ver');
 Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
+Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
 
 
 Route::get('/mano-de-obra', [ManoObraController::class, 'index'])->name('mano.de.obra');
