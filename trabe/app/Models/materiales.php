@@ -32,5 +32,9 @@ class materiales extends Model
 
     ];
     
+    public function categoria()
+    {
+        return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_Categoria');
+    }
     public $timestamps = false;
 }
