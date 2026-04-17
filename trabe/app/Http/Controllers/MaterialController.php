@@ -9,24 +9,24 @@ use Illuminate\Http\Request;
 class MaterialController extends Controller
 {
     public function index(Request $request)
-    {
-        // Iniciamos la consulta incluyendo la categoría
-        $query = Material::with('categoria');
+{
+    $query = Material::with('categoria');
 
-        // Verificamos si el usuario escribió algo en la barra de búsqueda
-        if ($request->has('buscar') && $request->buscar != '') {
-            $termino = $request->buscar;
-            
-            // Filtramos por nombre o por código
-            $query->where('nombre', 'LIKE', '%' . $termino . '%')
-                  ->orWhere('codigo', 'LIKE', '%' . $termino . '%');
-        }
-
-        // Ejecutamos la consulta
-        $materiales = $query->get();
-
-        return view('materiales.materiales', compact('materiales'));
+    if ($request->has('buscar') && $request->buscar != '') {
+        $termino = $request->buscar;
+        
+        // Agrupamos la consulta usando una función anónima (closure)
+        // Esto le dice a Laravel: "Busca ESTO en el nombre O en el código" de forma segura.
+        $query->where(function($q) use ($termino) {
+            $q->where('nombre', 'LIKE', '%' . $termino . '%')
+              ->orWhere('codigo', 'LIKE', '%' . $termino . '%');
+        });
     }
+
+    $materiales = $query->get();
+
+    return view('materiales.materiales', compact('materiales'));
+}
 
     public function agregar()
     {
