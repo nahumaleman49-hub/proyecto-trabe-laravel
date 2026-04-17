@@ -27,7 +27,9 @@ class materiales extends Model
         "codigo",
         "medidas",
         "fk_id_categoria",
-        "ficha_tecnica"
+        "ficha_tecnica",
+        "precio"
+
     ];
     
     public $timestamps = false;

@@ -8,10 +8,23 @@ use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Traemos los materiales con su categoría para evitar el error N+1 y null properties
-        $materiales = Material::with('categoria')->get();
+        // Iniciamos la consulta incluyendo la categoría
+        $query = Material::with('categoria');
+
+        // Verificamos si el usuario escribió algo en la barra de búsqueda
+        if ($request->has('buscar') && $request->buscar != '') {
+            $termino = $request->buscar;
+            
+            // Filtramos por nombre o por código
+            $query->where('nombre', 'LIKE', '%' . $termino . '%')
+                  ->orWhere('codigo', 'LIKE', '%' . $termino . '%');
+        }
+
+        // Ejecutamos la consulta
+        $materiales = $query->get();
+
         return view('materiales.materiales', compact('materiales'));
     }
 
@@ -27,6 +40,7 @@ class MaterialController extends Controller
             'nombre' => 'required|string|max:100',
             'codigo' => 'required|string|max:20',
             'medidas' => 'required|string|max:20',
+            'precio' => 'required|numeric|min:0',
             'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
         ]);
 
@@ -48,6 +62,7 @@ class MaterialController extends Controller
             'nombre' => 'required|string|max:100',
             'codigo' => 'required|string|max:20',
             'medidas' => 'required|string|max:20',
+            'precio' => 'required|numeric|min:0',
             'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
         ]);
 
