@@ -5,6 +5,7 @@ use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProyectoController;
 
 /*
 |-----------------------------------------------------------------------
@@ -41,3 +42,10 @@ Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('c
 
 Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales');
 
+
+Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
+Route::get('/proyectos/agregar', [ProyectoController::class, 'agregar'])->name('proyectos.agregar');
+Route::post('/proyectos', [ProyectoController::class, 'guardar'])->name('proyectos.guardar');
+Route::get('/proyectos/{id}/modificar', [ProyectoController::class, 'editar'])->name('proyectos.modificar');
+Route::put('/proyectos/{id}', [ProyectoController::class, 'actualizar'])->name('proyectos.actualizar');
+Route::delete('/proyectos/{id}', [ProyectoController::class, 'eliminar'])->name('proyectos.eliminar');

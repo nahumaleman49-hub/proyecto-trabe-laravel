@@ -9,21 +9,12 @@ class proyecto extends Model
 {
     use HasFactory;
     
-    protected $table = "proyecto"; 
+    protected $table = "proyecto";  // Asegúrate que coincida con la BD
     protected $primaryKey = "ID_proyecto";
     public $incrementing = true;
     protected $keyType = "int";
     
-    protected $ID_proyecto;
-    protected $nombre;
-    protected $fk_id_cliente;
-    protected $estado;
-    protected $fecha_ini;
-    protected $fecha_fin;
-    protected $presupuesto;
-    
     protected $fillable = [
-        "ID_proyecto",
         "nombre",
         "fk_id_cliente",
         "estado",
@@ -33,4 +24,9 @@ class proyecto extends Model
     ];
     
     public $timestamps = false;
+
+    public function cliente()
+    {
+        return $this->belongsTo(clientes::class, 'fk_id_cliente', 'ID_cliente');
+    }
 }
