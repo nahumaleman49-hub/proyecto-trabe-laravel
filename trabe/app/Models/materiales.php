@@ -20,6 +20,7 @@ class materiales extends Model
     protected $medidas;
     protected $fk_id_categoria;
     protected $ficha_tecnica;
+    protected $precio;
     
     protected $fillable = [
         "ID_Material",
