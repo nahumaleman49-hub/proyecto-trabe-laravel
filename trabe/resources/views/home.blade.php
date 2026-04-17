@@ -57,7 +57,7 @@
                 </a>
 
                 {{-- Materiales --}}
-                <a href="{{ route('materiales') }}" class="card" data-path="materials">
+                <a href="{{ route('materiales.index') }}" class="card" data-path="materials">
                     <div class="card-inner">
                         <div class="icon-bg gradient-1">
                             <i data-lucide="box" class="icon"></i>
