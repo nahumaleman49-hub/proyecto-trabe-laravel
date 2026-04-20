@@ -14,12 +14,15 @@
         <div class="content-wrapper">
             {{-- Barra superior con botón de logout --}}
             <div class="top-bar">
-                
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">Cerrar Sesión</button>
+                </form>
             </div>
 
             {{-- Área de marca --}}
             <div class="brand-area">
-                <img src="{{ asset('/css/logo.png') }}" alt="Trabe Ingeniería" class="logo-img">
+                <img src="{{ asset('images/logo.jpeg') }}" alt="Trabe Ingeniería" class="logo-img">
                 <h1 class="main-title">QOSTO</h1>
                 <p class="tagline">Tu puerta de acceso a la excelencia en construcción, diseño y arquitectura</p>
             </div>
