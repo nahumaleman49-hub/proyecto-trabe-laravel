@@ -14,7 +14,10 @@
         <div class="content-wrapper">
             {{-- Barra superior con botón de logout --}}
             <div class="top-bar">
-                
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">Cerrar Sesión</button>
+                </form>
             </div>
 
             {{-- Área de marca --}}
