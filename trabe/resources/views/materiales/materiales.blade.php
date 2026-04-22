@@ -93,7 +93,7 @@
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Nombre</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Unidad</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Categoría</th>
-                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Precio</th>
+                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Precios por Proveedor</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Acciones</th>
                         </tr>
                     </thead>
@@ -104,7 +104,22 @@
                                 <td class="py-4 px-4 font-semibold text-slate-800">{{ $material->nombre }}</td>
                                 <td class="py-4 px-4 text-slate-600">{{ $material->medidas }}</td>
                                 <td class="py-4 px-4 text-slate-600">{{ $material->categoria->nombre ?? 'Sin Categoría' }}</td>
-                                <td class="py-4 px-4 text-slate-600">${{ number_format($material->precio, 2) }}</td>
+                                
+                                <td class="py-4 px-4 text-slate-600">
+                                    @if($material->abastecimientos && $material->abastecimientos->count() > 0)
+                                        <ul class="space-y-1">
+                                            @foreach($material->abastecimientos as $abasto)
+                                                <li class="text-sm">
+                                                    <span class="font-medium text-slate-700">{{ $abasto->proveedor->nombre ?? 'Proveedor desconocido' }}:</span> 
+                                                    <span class="text-green-600 font-semibold">${{ number_format($abasto->precio, 2) }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <span class="text-sm text-slate-400 italic">Sin precios registrados</span>
+                                    @endif
+                                </td>
+
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-3">
                                         <a href="{{ route('materiales.editar', $material->ID_Material) }}" class="text-slate-600 hover:text-slate-800 transition-all" title="Editar">

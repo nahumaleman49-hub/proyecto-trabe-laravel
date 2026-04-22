@@ -59,17 +59,6 @@
                     </div>
 
                     <div>
-                        <label class="block text-slate-700 font-bold mb-2">Precio Unitario ($) *</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 font-semibold">$</span>
-                            <input type="number" name="precio" step="0.01" value="{{ old('precio', $material->precio ?? '') }}" 
-                                   class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all"
-                                   placeholder="0.00" required>
-                        </div>
-                        @error('precio') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
                         <div class="flex justify-between items-center mb-2">
                             <label class="text-slate-700 font-bold">Categoría *</label>
                             <a href="{{ route('categorias.agregar') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
@@ -88,7 +77,42 @@
                         @error('fk_id_categoria') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                </div>
+                    @if(!isset($material))
+                        <div class="md:col-span-2 mt-4 pt-6 border-t border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                <i data-lucide="truck" class="w-5 h-5 mr-2 text-slate-500"></i>
+                                Asignación de Proveedor y Precio Inicial
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                
+                                <div>
+                                    <label class="block text-slate-700 font-bold mb-2">Proveedor *</label>
+                                    <select name="fk_id_proveedor" required class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white transition-all">
+                                        <option value="" disabled {{ old('fk_id_proveedor') ? '' : 'selected' }}>Seleccione un proveedor...</option>
+                                        @foreach($proveedores as $proveedor)
+                                            <option value="{{ $proveedor->ID_proveedor }}" {{ old('fk_id_proveedor') == $proveedor->ID_Proveedor ? 'selected' : '' }}>
+                                                {{ $proveedor->nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('fk_id_proveedor') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-slate-700 font-bold mb-2">Precio Unitario Inicial ($) *</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 font-semibold">$</span>
+                                        <input type="number" name="precio" step="0.01" value="{{ old('precio') }}" 
+                                               class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all"
+                                               placeholder="0.00" required>
+                                    </div>
+                                    @error('precio') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                            </div>
+                        </div>
+                    @endif
+                    </div>
 
                 <div class="mt-10 flex flex-col sm:flex-row gap-4 border-t border-slate-100 pt-8">
                     <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-xl hover:bg-slate-900 transition-all shadow-lg font-bold">
@@ -104,6 +128,15 @@
         </div>
     </div>
 </div>
+@if($errors->any())
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <script>
     // Inicializar iconos de Lucide

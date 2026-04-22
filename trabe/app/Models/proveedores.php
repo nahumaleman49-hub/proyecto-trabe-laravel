@@ -29,6 +29,15 @@ class proveedores extends Model
         "correo_e",
         "direccion"
     ];
+    public function abastecimientos()
+    {
+        return $this->hasMany(abastecimiento::class, 'fk_id_proveedor', 'ID_Proveedor');
+    }
+
+    public function manosDeObra()
+    {
+        return $this->hasMany(manoobra::class, 'fk_id_proveedor', 'ID_Proveedor');
+    }
     
     public $timestamps = false;
 }
