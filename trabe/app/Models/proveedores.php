@@ -20,6 +20,7 @@ class proveedores extends Model
     protected $telefono;
     protected $correo_e;
     protected $direccion;
+    protected $tipo;
     
     protected $fillable = [
         "ID_proveedor",
@@ -27,7 +28,9 @@ class proveedores extends Model
         "nombre_contacto",
         "telefono",
         "correo_e",
-        "direccion"
+        "direccion",
+        "tipo"
+        
     ];
     public function abastecimientos()
     {

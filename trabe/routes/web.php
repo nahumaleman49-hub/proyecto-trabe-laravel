@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
     Route::put('/proveedores/{proveedor}', [ProveedorController::class, 'actualizar'])->name('proveedores.actualizar');
     Route::delete('/proveedores/{proveedor}', [ProveedorController::class, 'eliminar'])->name('proveedores.eliminar');
+    Route::post('/proveedores/vincular-material', [ProveedorController::class, 'vincularMaterial'])->name('proveedores.vincularMaterial');
+
     //Mano de obra sigue incompleto
     Route::get('/mano-de-obra', [ManoObraController::class, 'index'])->name('mano.de.obra');
     Route::get('/mano-de-obra/agregar', [ManoObraController::class, 'agregar'])->name('mano.de.obra.agregar');
@@ -71,4 +73,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/materiales/editar/{id}', [MaterialController::class, 'editar'])->name('materiales.editar');
     Route::put('/materiales/actualizar/{id}', [MaterialController::class, 'actualizar'])->name('materiales.actualizar');
     Route::delete('/materiales/eliminar/{id}', [MaterialController::class, 'eliminar'])->name('materiales.eliminar');
+    // Ruta especial para la creación rápida vía AJAX
+    Route::post('/materiales/guardar-rapido', [MaterialController::class, 'guardarRapido'])->name('materiales.guardarRapido');
 });

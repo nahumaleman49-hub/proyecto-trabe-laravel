@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\materiales as Material;
 use App\Models\categoria as Categoria;
-use App\Models\proveedores as Proveedor; // 
+use App\Models\proveedores as Proveedor; 
 use App\Models\abastecimiento as Abastecimiento;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; // Para las transacciones seguras
+use Exception; // Para el manejo de errores
 
 class MaterialController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. CARGAMOS LA NUEVA RELACIÓN
-        // Ahora traemos la categoría, los abastecimientos y el proveedor asociado a cada abastecimiento
         $query = Material::with(['categoria', 'abastecimientos.proveedor']);
 
         if ($request->has('buscar') && $request->buscar != '') {
@@ -33,78 +33,136 @@ class MaterialController extends Controller
     public function agregar()
     {
         $categorias = Categoria::all(); 
-        $proveedores = Proveedor::all(); // 2. Traemos los proveedores para poder asignar un precio inicial
+        
+        // Opcional: Si ya agregaste el campo 'tipo' en la DB, podrías filtrar aquí 
+        // para que no salgan los plomeros/electricistas en la lista de materiales
+        // $proveedores = Proveedor::where('tipo', '!=', 'Servicios')->get();
+        $proveedores = Proveedor::all(); 
         
         return view('materiales.materialesagregar', compact('categorias', 'proveedores'));
     }
 
     public function guardar(Request $request)
     {
-        // 3. ACTUALIZAMOS LA VALIDACIÓN
         $request->validate([
-            'nombre' => 'required|string|max:100',
-            'codigo' => 'required|string|max:20',
+            // Agregamos la regla 'unique' para evitar duplicados en la base de datos
+            'nombre' => 'required|string|max:100|unique:materiales,nombre',
+            'codigo' => 'required|string|max:20|unique:materiales,codigo',
             'medidas' => 'required|string|max:20',
             'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
-            // Validaciones para el precio inicial en abastecimiento:
             'precio' => 'required|numeric|min:0',
             'fk_id_proveedor' => 'required|exists:proveedores,ID_Proveedor',
         ]);
 
-        // 4. GUARDAMOS EN DOS TABLAS DISTINTAS
-        // Primero creamos el material (usamos solo los campos que pertenecen a la tabla materiales)
-        $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
+        try {
+            DB::beginTransaction();
 
-        // Luego creamos el registro de abastecimiento (el precio ligado al proveedor y al nuevo material)
-        Abastecimiento::create([
-            'fk_id_material' => $material->ID_Material, // Usa la llave primaria de tu modelo material
-            'fk_id_proveedor' => $request->fk_id_proveedor,
-            'precio' => $request->precio
-        ]);
+            $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
 
-        return redirect()->route('materiales.index')->with('success', 'Material y precio inicial agregados.');
+            if (!$material || !$material->ID_Material) {
+                throw new Exception("Error al obtener el ID del material creado.");
+            }
+
+            Abastecimiento::create([
+                'fk_id_material' => $material->ID_Material, 
+                'fk_id_proveedor' => $request->fk_id_proveedor,
+                'precio' => $request->precio
+            ]);
+
+            DB::commit();
+            return redirect()->route('materiales.index')->with('success', 'Material y precio inicial agregados.');
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => 'Ocurrió un error al guardar: ' . $e->getMessage()]);
+        }
     }
 
     public function editar($id)
     {
-        $material = Material::findOrFail($id);
+        // Traemos también las relaciones para poder ver la tabla de proveedores actuales
+        $material = Material::with('abastecimientos.proveedor')->findOrFail($id);
         $categorias = Categoria::all();
-        // Solo pasamos categorías porque aquí editaremos la información general del material
-        return view('materiales.materialesagregar', compact('material', 'categorias'));
+        $proveedores = Proveedor::all();
+        
+        return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedores'));
     }
 
     public function actualizar(Request $request, $id)
     {
-        // 5. REMOVEMOS PRECIO DE LA ACTUALIZACIÓN
-        // Al actualizar, solo modificamos los datos básicos. 
-        // (Los precios se gestionan ahora por proveedor en su propia sección o tabla).
         $request->validate([
-            'nombre' => 'required|string|max:100',
-            'codigo' => 'required|string|max:20',
+            // Le decimos a unique que ignore el ID actual, así permite actualizar sin cambiar el nombre
+            'nombre' => 'required|string|max:100|unique:materiales,nombre,' . $id . ',ID_Material',
+            'codigo' => 'required|string|max:20|unique:materiales,codigo,' . $id . ',ID_Material',
             'medidas' => 'required|string|max:20',
             'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
         ]);
 
-        $material = Material::findOrFail($id);
-        
-        // Usamos only() para asegurar que no intentamos guardar un precio o proveedor directamente en la tabla material
-        $material->update($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
+        try {
+            $material = Material::findOrFail($id);
+            $material->update($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
 
-        return redirect()->route('materiales.index')->with('success', 'Material actualizado correctamente.');
+            return redirect()->route('materiales.index')->with('success', 'Material actualizado correctamente.');
+        } catch (Exception $e) {
+            return back()->withInput()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
+        }
     }
 
     public function eliminar($id)
     {
-        $material = Material::findOrFail($id);
-        
-        // 6. ELIMINACIÓN EN CASCADA
-        // Como el material tiene abastecimientos ligados, debemos borrarlos primero 
-        // para que la base de datos no dé error por las llaves foráneas.
-        $material->abastecimientos()->delete(); 
-        
-        // Finalmente borramos el material
-        $material->delete();
+        try {
+            DB::beginTransaction();
+            
+            $material = Material::findOrFail($id);
+            $material->abastecimientos()->delete(); 
+            $material->delete();
 
-        return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
+            DB::commit();
+            return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al eliminar el material: ' . $e->getMessage()]);
+        }
+    }
+
+    // =========================================================================
+    // NUEVA FUNCIÓN PARA LA VENTANA EMERGENTE (AJAX)
+    // =========================================================================
+    public function guardarRapido(Request $request)
+    {
+        try {
+            $request->validate([
+                'nombre' => 'required|string|max:100|unique:materiales,nombre',
+                'codigo' => 'required|string|max:20|unique:materiales,codigo',
+                'medidas' => 'required|string|max:20',
+                'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
+            ]);
+
+            $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria']));
+
+            // Devolvemos un JSON para que Javascript lo procese sin recargar
+            return response()->json([
+                'success' => true,
+                'material' => [
+                    'id' => $material->ID_Material, 
+                    'nombre' => $material->nombre
+                ],
+                'mensaje' => 'Material creado correctamente'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Error de validación (Ej. Nombre duplicado)
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Verifique sus datos. Es posible que el código o nombre ya existan.',
+                'errores' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            // Error de servidor o base de datos
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error del servidor: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
