@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class ordenes extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $table = "ordenes"; 
     protected $primaryKey = "ID_Orden";

@@ -21,7 +21,7 @@
     </div>
 
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <a href="{{ route('proyectos.index') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
+        <a href="{{ route('proyectos') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
             Volver a Proyectos
         </a>
@@ -78,7 +78,7 @@
                         <i data-lucide="save" class="w-5 h-5"></i>
                         {{ isset($proyecto) ? 'Actualizar Proyecto' : 'Guardar Proyecto' }}
                     </button>
-                    <a href="{{ route('proyectos.index') }}" class="px-8 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50">Cancelar</a>
+                    <a href="{{ route('proyectos') }}" class="px-8 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50">Cancelar</a>
                 </div>
             </form>
         </div>

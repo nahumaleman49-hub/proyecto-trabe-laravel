@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class materiales extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $table = "materiales"; 
     protected $primaryKey = "ID_Material";

@@ -103,7 +103,7 @@
                     </div>
                 </a>
                 <!-- proyectos -->
-                <a href="{{ route('proyectos.index') }}" class="card" data-path="/proyectos">
+                <a href="{{ route('proyectos') }}" class="card" data-path="/proyectos">
                     <div class="card-inner">
                         <div class="icon-bg gradient-2"> <!-- Puedes usar gradient-1 si no tienes más -->
                             <i data-lucide="briefcase" class="icon"></i>

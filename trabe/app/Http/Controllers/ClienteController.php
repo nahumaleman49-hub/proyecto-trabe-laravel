@@ -9,7 +9,7 @@ class ClienteController extends Controller
 {
     public function index()
     {
-        $clientes = Cliente::all();
+        $clientes = Cliente::all(); // solo no eliminados
         return view('clientes.clientes', compact('clientes'));
     }
 
@@ -22,11 +22,11 @@ class ClienteController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:50',
-            'telefono' => 'required|integer',
+            'telefono' => 'required|string|max:11',
             'direccion' => 'required|string|max:80',
         ]);
 
-        Cliente::create($request->all()); 
+        Cliente::create($request->all());
 
         return redirect()->route('clientes')->with('success', 'Cliente agregado correctamente.');
     }
@@ -34,19 +34,19 @@ class ClienteController extends Controller
     public function editar($id)
     {
         $cliente = Cliente::findOrFail($id);
-        return view('clientes.clientesagregar', compact('cliente'));
+        return view('clientes-agregar', compact('cliente'));
     }
 
     public function actualizar(Request $request, $id)
     {
         $request->validate([
             'nombre' => 'required|string|max:50',
-            'telefono' => 'required|integer',
+            'telefono' => 'required|string|max:11',
             'direccion' => 'required|string|max:80',
         ]);
 
         $cliente = Cliente::findOrFail($id);
-        $cliente->update($request->all()); 
+        $cliente->update($request->all());
 
         return redirect()->route('clientes')->with('success', 'Cliente actualizado correctamente.');
     }
@@ -54,7 +54,7 @@ class ClienteController extends Controller
     public function eliminar($id)
     {
         $cliente = Cliente::findOrFail($id);
-        $cliente->delete();
+        $cliente->delete(); // soft delete
 
         return redirect()->route('clientes')->with('success', 'Cliente eliminado correctamente.');
     }

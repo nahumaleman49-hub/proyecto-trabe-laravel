@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class proyecto extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $table = "proyecto";  // Asegúrate que coincida con la BD
     protected $primaryKey = "ID_proyecto";

@@ -5,7 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MaterialController;
-use App\Http\Controllers\ManoObraController;
+use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProveedorController;
@@ -35,13 +35,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores');
     Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');
     Route::post('/proveedores', [ProveedorController::class, 'guardar'])->name('proveedores.guardar');
-    Route::get('/proveedores/{proveedor}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
-    Route::put('/proveedores/{proveedor}', [ProveedorController::class, 'actualizar'])->name('proveedores.actualizar');
-    Route::delete('/proveedores/{proveedor}', [ProveedorController::class, 'eliminar'])->name('proveedores.eliminar');
-    //Mano de obra sigue incompleto
-    Route::get('/mano-de-obra', [ManoObraController::class, 'index'])->name('mano.de.obra');
-    Route::get('/mano-de-obra/agregar', [ManoObraController::class, 'agregar'])->name('mano.de.obra.agregar');
-    Route::post('/mano-de-obra', [ManoObraController::class, 'guardar'])->name('mano.de.obra.guardar');
+    Route::get('/proveedores/{id}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
+    Route::put('/proveedores/{id}', [ProveedorController::class, 'actualizar'])->name('proveedores.actualizar');
+    Route::delete('/proveedores/{id}', [ProveedorController::class, 'eliminar'])->name('proveedores.eliminar');
+    //falta mano de obra (servicios)
+    Route::get('/mano-de-obra', [ServicioController::class, 'index'])->name('mano.de.obra');
+    Route::get('/mano-de-obra/agregar', [ServicioController::class, 'agregar'])->name('mano.de.obra.agregar');
+    Route::post('/mano-de-obra', [ServicioController::class, 'guardar'])->name('mano.de.obra.guardar');
+    Route::get('/mano-de-obra/{id}/modificar', [ServicioController::class, 'editar'])->name('mano.de.obra.modificar');
+    Route::put('/mano-de-obra/{id}', [ServicioController::class, 'actualizar'])->name('mano.de.obra.actualizar');
+    Route::delete('/mano-de-obra/{id}', [ServicioController::class, 'eliminar'])->name('mano.de.obra.eliminar');
     //modulo de clientes funciona al 100%
     Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes');
     Route::get('/clientes/agregar', [ClienteController::class, 'agregar'])->name('clientes.agregar');
@@ -49,9 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/{id}/modificar', [ClienteController::class, 'editar'])->name('clientes.modificar');
     Route::put('/clientes/{id}', [ClienteController::class, 'actualizar'])->name('clientes.actualizar');
     Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('clientes.eliminar');
-
     //modulo de proyectos funciona al 100%
-    Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
+    Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos');
     Route::get('/proyectos/agregar', [ProyectoController::class, 'agregar'])->name('proyectos.agregar');
     Route::post('/proyectos', [ProyectoController::class, 'guardar'])->name('proyectos.guardar');
     Route::get('/proyectos/{id}/modificar', [ProyectoController::class, 'editar'])->name('proyectos.modificar');

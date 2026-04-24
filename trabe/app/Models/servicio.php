@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class servicio extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'servicio';
     protected $primaryKey = 'ID_servicio';
@@ -24,7 +25,7 @@ class servicio extends Model
     }
 
     // Relación: Un servicio puede tener muchas manos de obra (cotizaciones de distintos proveedores)
-    public function manosDeObra()
+    public function manoObra()
     {
         return $this->hasMany(manoobra::class, 'fk_id_servicio', 'ID_servicio');
     }

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class preciohistorico extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $table = "preciohistorico"; 
     protected $primaryKey = "ID_preciohist";
