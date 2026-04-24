@@ -73,4 +73,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/materiales/editar/{id}', [MaterialController::class, 'editar'])->name('materiales.editar');
     Route::put('/materiales/actualizar/{id}', [MaterialController::class, 'actualizar'])->name('materiales.actualizar');
     Route::delete('/materiales/eliminar/{id}', [MaterialController::class, 'eliminar'])->name('materiales.eliminar');
+    // Ruta especial para la creación rápida vía AJAX
+    Route::post('/materiales/guardar-rapido', [MaterialController::class, 'guardarRapido'])->name('materiales.guardarRapido');
 });
