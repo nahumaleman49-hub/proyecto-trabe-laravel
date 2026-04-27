@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/proveedores/{id}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
     Route::put('/proveedores/{id}', [ProveedorController::class, 'actualizar'])->name('proveedores.actualizar');
     Route::delete('/proveedores/{id}', [ProveedorController::class, 'eliminar'])->name('proveedores.eliminar');
+    Route::post('/proveedores/vincular-material', [ProveedorController::class, 'vincularMaterial'])->name('proveedores.vincularMaterial');
     //falta mano de obra (servicios)
     Route::get('/mano-de-obra', [ServicioController::class, 'index'])->name('mano.de.obra');
     Route::get('/mano-de-obra/agregar', [ServicioController::class, 'agregar'])->name('mano.de.obra.agregar');

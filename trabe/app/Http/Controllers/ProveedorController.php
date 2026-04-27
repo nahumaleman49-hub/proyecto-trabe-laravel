@@ -67,7 +67,7 @@ class ProveedorController extends Controller
         $proveedor = Proveedor::findOrFail($id);
         $proveedor->update($request->all());
 
-        return redirect()->route('proveedores.proveedores')->with('success', 'Proveedor actualizado.');
+        return redirect()->route('proveedores')->with('success', 'Proveedor actualizado.');
     }
 
     // Nueva función para vincular un material y precio desde la vista de edición

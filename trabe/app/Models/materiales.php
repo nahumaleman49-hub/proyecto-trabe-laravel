@@ -35,12 +35,12 @@ class materiales extends Model
     public function categoria()
 {
 
-    return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_Categoria'); 
+    return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_categoria'); 
 }
 
     public function abastecimientos()
     {
-        return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_Material');
+        return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_material');
     }
 
     public $timestamps = false;

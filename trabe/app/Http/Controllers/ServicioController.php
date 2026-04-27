@@ -77,7 +77,7 @@ class ServicioController extends Controller
         return redirect()->route('mano.de.obra')->with('success', 'Servicio actualizado correctamente.');
     }
 
-    public function destory($id)
+    public function eliminar($id)
     {
         $servicio = Servicio::findOrFail($id);
         // Primero eliminar los detalles asociados
@@ -85,6 +85,6 @@ class ServicioController extends Controller
         // Soft delete del servicio
         $servicio->delete();
 
-        return redirect()->route('servicios.manodeobra')->with('success', 'Servicio eliminado correctamente.');
+        return redirect()->route('mano.de.obra')->with('success', 'Servicio eliminado correctamente.');
     }
 }

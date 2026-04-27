@@ -82,13 +82,14 @@
                                         <a href="{{ route('proyectos.modificar', $proyecto->ID_proyecto) }}" class="text-slate-600 hover:text-slate-800" title="Editar">
                                             <i data-lucide="edit" class="w-5 h-5"></i>
                                         </a>
+                                        <!-- eliminar un proyecto funcion incluida no visible para interaccion
                                         <form action="{{ route('proyectos.eliminar', $proyecto->ID_proyecto) }}" method="POST" onsubmit="return confirm('¿Eliminar este proyecto?')" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-700" title="Eliminar">
                                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                                             </button>
-                                        </form>
+                                        </form> -->
                                     </div>
                                 </td>
                             </tr>

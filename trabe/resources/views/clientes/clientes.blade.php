@@ -80,13 +80,14 @@
                                         <a href="{{ route('clientes.modificar', $cliente->ID_cliente) }}" class="text-slate-600 hover:text-slate-800 transition-all" title="Editar">
                                             <i data-lucide="edit" class="w-5 h-5"></i>
                                         </a>
+                                        <!-- eliminar un cliente es una funcion desarrollada pero no disponible para la interaccion
                                         <form action="{{ route('clientes.eliminar', $cliente->ID_cliente) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este cliente?')" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-700 transition-all" title="Eliminar">
                                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                                             </button>
-                                        </form>
+                                        </form> -->
                                     </div>
                                 </td>
                             </tr>

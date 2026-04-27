@@ -35,12 +35,12 @@ class proveedores extends Model
     ];
     public function abastecimientos()
     {
-        return $this->hasMany(abastecimiento::class, 'fk_id_proveedor', 'ID_Proveedor');
+        return $this->hasMany(abastecimiento::class, 'fk_id_proveedor', 'ID_proveedor');
     }
 
     public function manosDeObra()
     {
-        return $this->hasMany(manoobra::class, 'fk_id_proveedor', 'ID_Proveedor');
+        return $this->hasMany(manoobra::class, 'fk_id_proveedor', 'ID_proveedor');
     }
     
     public $timestamps = false;
