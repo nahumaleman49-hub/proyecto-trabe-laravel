@@ -7,8 +7,8 @@ use App\Models\categoria as Categoria;
 use App\Models\proveedores as Proveedor; 
 use App\Models\abastecimiento as Abastecimiento;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Para las transacciones seguras
-use Exception; // Para el manejo de errores
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class MaterialController extends Controller
 {
@@ -18,7 +18,6 @@ class MaterialController extends Controller
 
         if ($request->has('buscar') && $request->buscar != '') {
             $termino = $request->buscar;
-            
             $query->where(function($q) use ($termino) {
                 $q->where('nombre', 'LIKE', '%' . $termino . '%')
                   ->orWhere('codigo', 'LIKE', '%' . $termino . '%');
@@ -26,7 +25,6 @@ class MaterialController extends Controller
         }
 
         $materiales = $query->get();
-
         return view('materiales.materiales', compact('materiales'));
     }
 
@@ -34,56 +32,41 @@ class MaterialController extends Controller
     {
         $categorias = Categoria::all(); 
         
-        // Opcional: Si ya agregaste el campo 'tipo' en la DB, podrías filtrar aquí 
-        // para que no salgan los plomeros/electricistas en la lista de materiales
-        // $proveedores = Proveedor::where('tipo', '!=', 'Servicios')->get();
-        $proveedores = Proveedor::all(); 
-        
-        return view('materiales.materialesagregar', compact('categorias', 'proveedores'));
+        // ¡CUMPLIENDO EL PENDIENTE #5! 
+        // Ya no cargamos los proveedores aquí porque crear un material 
+        // debe ser independiente de asignarle un proveedor.
+        return view('materiales.materialesagregar', compact('categorias'));
     }
 
     public function guardar(Request $request)
     {
+        // ¡CUMPLIENDO EL PENDIENTE #5!
+        // Limpiamos la validación. Ya no exigimos 'precio' ni 'fk_id_proveedor'
         $request->validate([
-            // Agregamos la regla 'unique' para evitar duplicados en la base de datos
             'nombre' => 'required|string|max:100|unique:materiales,nombre',
             'codigo' => 'required|string|max:20|unique:materiales,codigo',
             'medidas' => 'required|string|max:20',
             'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
-            'precio' => 'required|numeric|min:0',
-            'fk_id_proveedor' => 'required|exists:proveedores,ID_Proveedor',
         ]);
 
         try {
-            DB::beginTransaction();
+            // Creamos el material limpio, sin transacciones pesadas porque es una sola tabla
+            Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
 
-            $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
-
-            if (!$material || !$material->ID_Material) {
-                throw new Exception("Error al obtener el ID del material creado.");
-            }
-
-            Abastecimiento::create([
-                'fk_id_material' => $material->ID_Material, 
-                'fk_id_proveedor' => $request->fk_id_proveedor,
-                'precio' => $request->precio
-            ]);
-
-            DB::commit();
-            return redirect()->route('materiales.index')->with('success', 'Material y precio inicial agregados.');
+            return redirect()->route('materiales.index')->with('success', 'Material creado. Ahora puedes editarlo para asignarle proveedores y precios.');
             
         } catch (Exception $e) {
-            DB::rollBack();
             return back()->withInput()->withErrors(['error' => 'Ocurrió un error al guardar: ' . $e->getMessage()]);
         }
     }
 
     public function editar($id)
     {
-        // Traemos también las relaciones para poder ver la tabla de proveedores actuales
         $material = Material::with('abastecimientos.proveedor')->findOrFail($id);
         $categorias = Categoria::all();
-        $proveedores = Proveedor::all();
+        
+        // Lógica bidireccional: Solo traemos proveedores que vendan materiales
+        $proveedores = Proveedor::whereIn('tipo', ['Materiales', 'Ambos'])->get();
         
         return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedores'));
     }
@@ -91,7 +74,6 @@ class MaterialController extends Controller
     public function actualizar(Request $request, $id)
     {
         $request->validate([
-            // Le decimos a unique que ignore el ID actual, así permite actualizar sin cambiar el nombre
             'nombre' => 'required|string|max:100|unique:materiales,nombre,' . $id . ',ID_Material',
             'codigo' => 'required|string|max:20|unique:materiales,codigo,' . $id . ',ID_Material',
             'medidas' => 'required|string|max:20',
@@ -126,7 +108,48 @@ class MaterialController extends Controller
     }
 
     // =========================================================================
-    // NUEVA FUNCIÓN PARA LA VENTANA EMERGENTE (AJAX)
+    // FUNCIONES DE VINCULACIÓN (LÓGICA BIDIRECCIONAL Y PENDIENTE #7)
+    // =========================================================================
+
+    public function vincularProveedor(Request $request)
+    {
+        $request->validate([
+            'fk_id_material' => 'required|exists:materiales,ID_Material',
+            'fk_id_proveedor' => 'required|exists:proveedores,ID_proveedor',
+            'precio' => 'required|numeric|min:0',
+        ]);
+
+        $existe = Abastecimiento::where('fk_id_material', $request->fk_id_material)
+                                ->where('fk_id_proveedor', $request->fk_id_proveedor)
+                                ->first();
+
+        if ($existe) {
+            $existe->update(['precio' => $request->precio]);
+            $mensaje = "Precio actualizado correctamente.";
+        } else {
+            Abastecimiento::create($request->all());
+            $mensaje = "Proveedor vinculado al material correctamente.";
+        }
+
+        return back()->with('success', $mensaje);
+    }
+
+    // ¡CUMPLIENDO EL PENDIENTE #7! (Desvincular en caso de que deje de surtir)
+    public function desvincularProveedor($ID_Material, $ID_proveedor)
+    {
+        try {
+            Abastecimiento::where('fk_id_material', $ID_Material)
+                          ->where('fk_id_proveedor', $ID_proveedor)
+                          ->delete();
+
+            return back()->with('success', 'Proveedor desvinculado correctamente.');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'No se pudo desvincular: ' . $e->getMessage()]);
+        }
+    }
+
+    // =========================================================================
+    // FUNCIÓN PARA LA VENTANA EMERGENTE (AJAX)
     // =========================================================================
     public function guardarRapido(Request $request)
     {
@@ -140,7 +163,6 @@ class MaterialController extends Controller
 
             $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria']));
 
-            // Devolvemos un JSON para que Javascript lo procese sin recargar
             return response()->json([
                 'success' => true,
                 'material' => [
@@ -151,14 +173,12 @@ class MaterialController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Error de validación (Ej. Nombre duplicado)
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Verifique sus datos. Es posible que el código o nombre ya existan.',
                 'errores' => $e->errors()
             ], 422);
         } catch (Exception $e) {
-            // Error de servidor o base de datos
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error del servidor: ' . $e->getMessage()

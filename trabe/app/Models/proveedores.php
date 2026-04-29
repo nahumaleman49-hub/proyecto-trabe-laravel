@@ -33,14 +33,16 @@ class proveedores extends Model
         "tipo"
         
     ];
+    // Relación con la tabla puente de servicios (mano de obra)
+    public function manoObra()
+    {
+        return $this->hasMany(manoobra::class, 'fk_id_proveedor', 'ID_proveedor');
+    }
+
+    // Por si no la tenías, la relación con materiales (abastecimiento) es así:
     public function abastecimientos()
     {
         return $this->hasMany(abastecimiento::class, 'fk_id_proveedor', 'ID_proveedor');
-    }
-
-    public function manosDeObra()
-    {
-        return $this->hasMany(manoobra::class, 'fk_id_proveedor', 'ID_proveedor');
     }
     
     public $timestamps = false;

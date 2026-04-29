@@ -20,19 +20,29 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
         @if(session('success'))
-            <div class="mb-4 bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded relative" role="alert">
-                <span class="block sm:inline">{{ session('success') }}</span>
+            <div class="mb-4 bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded relative shadow-sm" role="alert">
+                <span class="block sm:inline font-medium">{{ session('success') }}</span>
+            </div>
+        @endif
+        
+        @if($errors->any())
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-sm">
+                <ul class="list-disc ml-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
-        <a href="{{ route('proveedores') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
+        <a href="{{ route('proveedores') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8 font-medium">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
             Volver a Proveedores
         </a>
 
-        <div class="bg-white rounded-2xl p-8 shadow-lg">
+        <div class="bg-white rounded-2xl p-8 shadow-lg mb-8 border border-slate-100">
             <form action="{{ isset($proveedor) ? route('proveedores.actualizar', $proveedor->ID_proveedor) : route('proveedores.guardar') }}" method="POST">
                 @csrf
                 @if(isset($proveedor)) @method('PUT') @endif
@@ -44,7 +54,6 @@
                             <input type="text" name="nombre" value="{{ old('nombre', $proveedor->nombre ?? '') }}" 
                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                    required maxlength="50">
-                            @error('nombre') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -55,7 +64,6 @@
                                 <option value="Servicios" {{ old('tipo', $proveedor->tipo ?? '') == 'Servicios' ? 'selected' : '' }}>Servicios (Mano de obra)</option>
                                 <option value="Ambos" {{ old('tipo', $proveedor->tipo ?? '') == 'Ambos' ? 'selected' : '' }}>Ambos</option>
                             </select>
-                            @error('tipo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -64,7 +72,6 @@
                         <input type="text" name="nombre_contacto" value="{{ old('nombre_contacto', $proveedor->nombre_contacto ?? '') }}" 
                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                required maxlength="50">
-                        @error('nombre_contacto') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,7 +80,6 @@
                             <input type="tel" name="telefono" value="{{ old('telefono', $proveedor->telefono ?? '') }}" 
                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                    required>
-                            @error('telefono') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -81,7 +87,6 @@
                             <input type="email" name="correo_e" value="{{ old('correo_e', $proveedor->correo_e ?? '') }}" 
                                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                    required>
-                            @error('correo_e') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -90,23 +95,23 @@
                         <textarea name="direccion" rows="3" 
                                   class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                   required maxlength="80">{{ old('direccion', $proveedor->direccion ?? '') }}</textarea>
-                        @error('direccion') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div class="mt-8 flex gap-4">
-                    <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
+                    <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow font-semibold">
                         <i data-lucide="save" class="w-5 h-5"></i>
-                        {{ isset($proveedor) ? 'Actualizar Proveedor' : 'Guardar Proveedor' }}
+                        {{ isset($proveedor) ? 'Actualizar Información' : 'Guardar Proveedor' }}
                     </button>
-                    <a href="{{ route('proveedores') }}" class="px-8 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center">
+                    <a href="{{ route('proveedores') }}" class="px-8 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center font-semibold">
                         Cancelar
                     </a>
                 </div>
             </form>
         </div>
+
         @if(isset($proveedor) && in_array($proveedor->tipo, ['Materiales', 'Ambos']))
-            <div class="mt-12 bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
+            <div class="bg-white rounded-2xl p-8 shadow-xl border border-slate-100 mb-8">
                 <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
                     <i data-lucide="package" class="w-6 h-6 mr-3 text-indigo-500"></i>
                     Catálogo de Materiales de {{ $proveedor->nombre }}
@@ -154,6 +159,7 @@
                                 <th class="py-3 px-4 font-bold border-b">Material</th>
                                 <th class="py-3 px-4 font-bold border-b">Medida</th>
                                 <th class="py-3 px-4 font-bold border-b text-right">Precio Actual</th>
+                                <th class="py-3 px-4 font-bold border-b text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -163,10 +169,19 @@
                                 <td class="py-3 px-4 font-semibold text-slate-800">{{ $abastecimiento->material->nombre }}</td>
                                 <td class="py-3 px-4 text-slate-600">{{ $abastecimiento->material->medidas }}</td>
                                 <td class="py-3 px-4 text-emerald-600 font-bold text-right">${{ number_format($abastecimiento->precio, 2) }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form action="{{ route('proveedores.desvincularMaterial', [$proveedor->ID_proveedor, $abastecimiento->fk_id_material]) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" onclick="return confirm('¿Seguro que deseas desvincular este material?');" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg" title="Desvincular">
+                                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="py-8 text-center text-slate-500">
+                                <td colspan="5" class="py-8 text-center text-slate-500">
                                     Este proveedor aún no tiene materiales asignados.
                                 </td>
                             </tr>
@@ -224,15 +239,96 @@
                     </form>
                 </div>
             </div>
-            @endif
+        @endif
+
+        @if(isset($proveedor) && in_array($proveedor->tipo, ['Servicios', 'Ambos']))
+            <div class="bg-white rounded-2xl p-8 shadow-xl border border-slate-100 mb-8">
+                <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i data-lucide="wrench" class="w-6 h-6 mr-3 text-amber-500"></i>
+                    Catálogo de Servicios de {{ $proveedor->nombre }}
+                </h3>
+
+                <form action="{{ route('proveedores.vincularServicio') }}" method="POST" class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
+                    @csrf
+                    <input type="hidden" name="fk_id_proveedor" value="{{ $proveedor->ID_proveedor }}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        <div class="md:col-span-5">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Seleccionar Servicio</label>
+                            <select name="fk_id_servicio" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                                <option value="" disabled selected>Buscar servicio...</option>
+                                @foreach($servicios as $srv)
+                                    <option value="{{ $srv->ID_servicio }}">{{ $srv->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Unidad de Medida</label>
+                            <input type="text" name="unidad" required placeholder="Ej. Hora, Día, Proyecto" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Precio ($)</label>
+                            <input type="number" step="0.01" name="precio" required placeholder="0.00" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center">
+                                <i data-lucide="link" class="w-4 h-4 mr-2"></i> Vincular
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-sm uppercase tracking-wider">
+                                <th class="py-3 px-4 font-bold border-b">Servicio</th>
+                                <th class="py-3 px-4 font-bold border-b">Categoría</th>
+                                <th class="py-3 px-4 font-bold border-b">Unidad de Medida</th>
+                                <th class="py-3 px-4 font-bold border-b text-right">Precio</th>
+                                <th class="py-3 px-4 font-bold border-b text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($proveedor->manoObra as $mo)
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-3 px-4 font-semibold text-slate-800">{{ $mo->servicio->nombre }}</td>
+                                <td class="py-3 px-4 text-slate-500">{{ $mo->servicio->categoria->nombre ?? 'Sin Categoría' }}</td>
+                                <td class="py-3 px-4 text-slate-600">{{ $mo->unidad }}</td>
+                                <td class="py-3 px-4 text-emerald-600 font-bold text-right">${{ number_format($mo->precio, 2) }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form action="{{ route('proveedores.desvincularServicio', [$proveedor->ID_proveedor, $mo->fk_id_servicio]) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" onclick="return confirm('¿Seguro que deseas desvincular este servicio?');" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg" title="Desvincular">
+                                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    Este proveedor aún no tiene servicios/mano de obra asignados.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
     </div>
 </div>
 
 <script>
-    // Inicializar Iconos
     lucide.createIcons();
 
-    // LÓGICA DEL MODAL (Solo se carga si el modal existe en el DOM)
+    // LÓGICA DEL MODAL DE MATERIALES
     if(document.getElementById('modalMaterial')) {
         const modal = document.getElementById('modalMaterial');
         const formularioModal = document.getElementById('formMaterialRapido');
@@ -261,7 +357,7 @@
             let formData = new FormData(formularioModal);
 
             try {
-                let respuesta = await fetch("{{ route('materiales.guardarRapido') }}", {
+                let respuesta = await fetch("{{ route('materiales.guardarRapido') ?? '#' }}", {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -273,17 +369,12 @@
 
                 if (respuesta.ok && datos.success) {
                     cerrarModal();
-                    
-                    // Agregar la nueva opción al select de materiales
                     let nuevaOpcion = new Option(`${datos.material.nombre} (Nuevo)`, datos.material.id, true, true);
                     selectorMateriales.add(nuevaOpcion);
-                    
-                    // Resaltar visualmente el select para que el usuario note el cambio
                     selectorMateriales.classList.add('ring-2', 'ring-emerald-500', 'border-emerald-500');
                     setTimeout(() => {
                         selectorMateriales.classList.remove('ring-2', 'ring-emerald-500', 'border-emerald-500');
                     }, 2000);
-
                 } else {
                     let mensajeError = datos.mensaje || "Revisa los campos.";
                     if(datos.errores) {
