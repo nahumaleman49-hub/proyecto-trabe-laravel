@@ -3,393 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QOSTO - Nueva Cotización</title>
+    <title>Nueva Cotización</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-slate-50">
 
-    <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <a href="{{ route('cotizaciones') }}" class="inline-flex items-center text-white hover:text-slate-200 transition-colors mb-4">
-                <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                Volver a Cotizaciones
-            </a>
-            <div class="flex items-center gap-4">
-                <i data-lucide="file-text" class="w-12 h-12"></i>
-                <div>
-                    <h1 class="text-4xl font-bold">Crear Nueva Cotización</h1>
-                    <p class="text-slate-300">Completa los detalles para generar una cotización del proyecto</p>
-                </div>
+<div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-12">
+    <div class="container mx-auto px-4">
+        <a href="{{ route('cotizaciones') }}" class="inline-flex items-center text-white hover:text-slate-200 mb-4">
+            <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i> Volver
+        </a>
+        <div class="flex items-center gap-4">
+            <i data-lucide="file-text" class="w-12 h-12"></i>
+            <div>
+                <h1 class="text-4xl font-bold">Nueva Cotización</h1>
+                <p class="text-slate-300">Selecciona cliente, materiales y servicios</p>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="container mx-auto px-4 py-8">
-        <form id="quoteForm" class="max-w-6xl mx-auto">
-            @csrf
-
-            {{-- Información del Proyecto --}}
-            <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Información del Proyecto</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del Proyecto *</label>
-                        <input type="text" name="projectName" id="projectName" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="ej., Renovación de Cocina">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo de Proyecto *</label>
-                        <select name="projectType" id="projectType" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent">
-                            <option value="">Seleccionar tipo</option>
-                            <option value="Residencial">Residencial</option>
-                            <option value="Comercial">Comercial</option>
-                            <option value="Industrial">Industrial</option>
-                            <option value="Renovación">Renovación</option>
-                            <option value="Construcción Nueva">Construcción Nueva</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Ubicación del Proyecto *</label>
-                        <input type="text" name="projectLocation" id="projectLocation" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="Dirección o ubicación">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Inicio</label>
-                            <input type="date" name="startDate" id="startDate" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Fin</label>
-                            <input type="date" name="endDate" id="endDate" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Descripción del Proyecto</label>
-                        <textarea name="description" id="description" rows="4" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="Describe el alcance y requisitos del proyecto..."></textarea>
-                    </div>
+<div class="container mx-auto px-4 py-8">
+    <form id="cotizacionForm" method="POST" action="{{ route('cotizaciones.guardar') }}">
+        @csrf
+        <input type="hidden" name="materiales_json" id="materiales_json">
+        <input type="hidden" name="servicios_json" id="servicios_json">
+        {{-- 1. Datos del proyecto y cliente --}}
+        <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">Proyecto y Cliente</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-semibold mb-2">Nombre del Proyecto *</label>
+                    <input type="text" name="nombre_proyecto" required class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Cliente *</label>
+                    <select name="cliente_id" id="cliente_id" required class="w-full border rounded-lg px-4 py-2">
+                        <option value="">Seleccione cliente</option>
+                        @foreach($clientes as $cliente)
+                            <option value="{{ $cliente->ID_cliente }}">{{ $cliente->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Teléfono</label>
+                    <input type="text" id="telefono" readonly class="w-full border rounded-lg bg-gray-100 px-4 py-2">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Correo electrónico</label>
+                    <input type="email" id="correo" readonly class="w-full border rounded-lg bg-gray-100 px-4 py-2">
                 </div>
             </div>
+        </div>
 
-            {{-- Información del Cliente --}}
-            <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Información del Cliente</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del Cliente *</label>
-                        <input type="text" name="clientName" id="clientName" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="Nombre completo o empresa">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico *</label>
-                        <input type="email" name="clientEmail" id="clientEmail" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="cliente@ejemplo.com">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Número de Teléfono</label>
-                        <input type="tel" name="clientPhone" id="clientPhone" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="+52 (555) 000-0000">
-                    </div>
-                </div>
-            </div>
-
-            {{-- Lista de Materiales --}}
-            <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Lista de Materiales</h2>
-
-                <div class="bg-slate-50 rounded-lg p-6 mb-4">
-                    <h3 class="font-semibold text-slate-700 mb-4">Agregar Material</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                        <select id="materialCategoria" class="px-4 py-2 border border-slate-300 rounded-lg">
-                            <option value="">Categoría</option>
-                            <option value="Estructurales">Estructurales</option>
-                            <option value="Albañilería">Albañilería</option>
-                            <option value="Acabados">Acabados</option>
-                            <option value="Instalaciones">Instalaciones</option>
-                        </select>
-                        <input type="text" id="materialNombre" placeholder="Nombre del material" class="px-4 py-2 border border-slate-300 rounded-lg">
-                        <input type="number" id="materialCantidad" placeholder="Cantidad" class="px-4 py-2 border border-slate-300 rounded-lg">
-                        <input type="text" id="materialUnidad" placeholder="Unidad (m², kg, pza)" class="px-4 py-2 border border-slate-300 rounded-lg">
-                        <input type="number" id="materialPrecioUnitario" placeholder="Precio unitario" class="px-4 py-2 border border-slate-300 rounded-lg">
-                    </div>
-                    <button type="button" id="addMaterialBtn" class="flex items-center gap-2 bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Agregar Material
-                    </button>
-                </div>
-
-                <div id="materialsTableContainer" class="overflow-x-auto hidden">
-                    <table class="w-full" id="materialsTable">
-                        <thead>
-                            <tr class="border-b-2 border-slate-200">
-                                <th class="text-left py-3 px-2 text-slate-700 font-semibold">Categoría</th>
-                                <th class="text-left py-3 px-2 text-slate-700 font-semibold">Material</th>
-                                <th class="text-right py-3 px-2 text-slate-700 font-semibold">Cantidad</th>
-                                <th class="text-left py-3 px-2 text-slate-700 font-semibold">Unidad</th>
-                                <th class="text-right py-3 px-2 text-slate-700 font-semibold">Precio Unit.</th>
-                                <th class="text-right py-3 px-2 text-slate-700 font-semibold">Subtotal</th>
-                                <th class="py-3 px-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="materialsTableBody"></tbody>
-                    </table>
-                </div>
-                <div id="noMaterialsMessage" class="text-center py-4 text-slate-500">No hay materiales agregados.</div>
-            </div>
-
-            {{-- Desglose de Costos --}}
-            <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Desglose de Costos</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Costo de Mano de Obra ($) *</label>
-                        <input type="number" name="labourCost" id="labourCost" required min="0" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Costo de Materiales ($) *</label>
-                        <input type="number" name="materialsCost" id="materialsCost" required min="0" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Costo de Equipo ($)</label>
-                        <input type="number" name="equipmentCost" id="equipmentCost" min="0" step="0.01" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Gastos Generales (%)</label>
-                        <input type="number" name="overheadPercentage" id="overheadPercentage" min="0" step="0.1" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="10">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Margen de Ganancia (%)</label>
-                        <input type="number" name="profitMargin" id="profitMargin" min="0" step="0.1" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" placeholder="15">
-                    </div>
-                </div>
-            </div>
-
-            {{-- Resumen de Cotización --}}
-            <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Resumen de Cotización</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-slate-700">Subtotal:</span>
-                        <span class="font-semibold text-slate-800" id="subtotal">$0.00</span>
-                    </div>
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-slate-700">Gastos Generales:</span>
-                        <span class="font-semibold text-slate-800" id="overhead">$0.00</span>
-                    </div>
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-slate-700">Ganancia:</span>
-                        <span class="font-semibold text-slate-800" id="profit">$0.00</span>
-                    </div>
-                    <div class="border-t-2 border-slate-300 pt-3 mt-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-2xl font-bold text-slate-800">Total de Cotización:</span>
-                            <span class="text-3xl font-bold text-slate-700" id="total">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex gap-4 justify-end">
-                <a href="{{ route('cotizaciones') }}" class="px-8 py-3 border-2 border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors inline-block text-center">Cancelar</a>
-                <button type="submit" id="submitBtn" class="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-lg hover:shadow-lg transition-shadow">
-                    <i data-lucide="save" class="w-5 h-5"></i>
-                    Generar Cotización
+        {{-- 2. Materiales --}}
+        <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex justify-between items-center">
+                Materiales
+                <button type="button" id="btnAgregarMaterial" class="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Agregar material
                 </button>
+            </h2>
+            <div id="materiales-wrapper">
+                <div class="grid grid-cols-1 gap-4" id="materiales-list"></div>
             </div>
-        </form>
-    </div>
+        </div>
 
-    <script>
-        // Materiales list (array)
-        let materials = [];
+        {{-- 3. Servicios --}}
+        <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex justify-between items-center">
+                Servicios (Mano de obra)
+                <button type="button" id="btnAgregarServicio" class="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Agregar servicio
+                </button>
+            </h2>
+            <div id="servicios-wrapper">
+                <div class="grid grid-cols-1 gap-4" id="servicios-list"></div>
+            </div>
+        </div>
 
-        // Elementos DOM
-        const materialsTableBody = document.getElementById('materialsTableBody');
-        const materialsTableContainer = document.getElementById('materialsTableContainer');
-        const noMaterialsMessage = document.getElementById('noMaterialsMessage');
-        const addMaterialBtn = document.getElementById('addMaterialBtn');
+        {{-- 4. Gastos generales y márgenes --}}
+        <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4">Costos Adicionales</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block font-semibold mb-2">Costo de Equipo ($)</label>
+                    <input type="number" name="costo_equipo" id="costo_equipo" value="0" step="0.01" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Gastos Generales (%)</label>
+                    <input type="number" name="gastos_generales" id="gastos_generales" value="10" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Margen de Ganancia (%)</label>
+                    <input type="number" name="margen_ganancia" id="margen_ganancia" value="15" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                </div>
+            </div>
+        </div>
 
-        // Función para actualizar tabla de materiales
-        function updateMaterialsTable() {
-            if (materials.length === 0) {
-                materialsTableContainer.classList.add('hidden');
-                noMaterialsMessage.classList.remove('hidden');
-                return;
-            }
-            materialsTableContainer.classList.remove('hidden');
-            noMaterialsMessage.classList.add('hidden');
-
-            let html = '';
-            materials.forEach((item, idx) => {
-                const subtotal = item.cantidad * item.precioUnitario;
-                html += `
-                    <tr class="border-b border-slate-100">
-                        <td class="py-3 px-2 text-slate-600">${escapeHtml(item.categoria)}</td>
-                        <td class="py-3 px-2 text-slate-800">${escapeHtml(item.material)}</td>
-                        <td class="py-3 px-2 text-right text-slate-800">${item.cantidad}</td>
-                        <td class="py-3 px-2 text-slate-600">${escapeHtml(item.unidad)}</td>
-                        <td class="py-3 px-2 text-right text-slate-800">$${formatNumber(item.precioUnitario)}</td>
-                        <td class="py-3 px-2 text-right font-semibold text-slate-800">$${formatNumber(subtotal)}</td>
-                        <td class="py-3 px-2 text-center">
-                            <button type="button" class="text-red-600 hover:text-red-800 remove-material" data-index="${idx}">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            materialsTableBody.innerHTML = html;
-
-            // Recrear íconos en los botones de eliminar
-            lucide.createIcons();
-
-            // Agregar event listeners a los botones de eliminar
-            document.querySelectorAll('.remove-material').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const index = parseInt(btn.getAttribute('data-index'));
-                    materials.splice(index, 1);
-                    updateMaterialsTable();
-                    updateTotals(); // Actualizar totales ya que materiales afectan el subtotal
-                });
-            });
-        }
-
-        // Agregar material
-        addMaterialBtn.addEventListener('click', () => {
-            const categoria = document.getElementById('materialCategoria').value;
-            const material = document.getElementById('materialNombre').value.trim();
-            const cantidad = parseFloat(document.getElementById('materialCantidad').value);
-            const unidad = document.getElementById('materialUnidad').value.trim();
-            const precioUnitario = parseFloat(document.getElementById('materialPrecioUnitario').value);
-
-            if (!material || isNaN(cantidad) || cantidad <= 0 || isNaN(precioUnitario) || precioUnitario <= 0) {
-                alert('Por favor completa todos los campos del material (nombre, cantidad >0, precio unitario >0)');
-                return;
-            }
-
-            materials.push({
-                categoria: categoria || 'General',
-                material: material,
+        {{-- 5. Resumen --}}
+        <div class="bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl p-8 shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Resumen</h2>
+            <div class="space-y-2 text-lg">
+                <div class="flex justify-between"><span>Subtotal Materiales:</span><span id="sumMateriales">$0.00</span></div>
+                <div class="flex justify-between"><span>Subtotal Servicios:</span><span id="sumServicios">$0.00</span></div>
+                <div class="flex justify-between font-semibold"><span>Subtotal General:</span><span id="subtotalGeneral">$0.00</span></div>
+                <div class="flex justify-between"><span>+ Gastos Generales:</span><span id="montoGastos">$0.00</span></div>
+                <div class="flex justify-between"><span>+ Margen de Ganancia:</span><span id="montoMargen">$0.00</span></div>
+                <div class="flex justify-between text-2xl font-bold pt-2 border-t"><span>Total Cotización:</span><span id="totalFinal">$0.00</span></div>
+            </div>
+        </div>
+        <script>
+            document.getElementById('cotizacionForm').addEventListener('submit', function(e) {
+    const materiales = [];
+    document.querySelectorAll('.material-item').forEach(row => {
+        const catSelect = row.querySelector('.categoria-material');
+        const matSelect = row.querySelector('.material-select');
+        const provSelect = row.querySelector('.proveedor-select');
+        const cantidad = row.querySelector('.cantidad-material').value;
+        if (matSelect.value && provSelect.value) {
+            materiales.push({
+                material_id: matSelect.value,
+                proveedor_id: provSelect.value,
                 cantidad: cantidad,
-                unidad: unidad || 'pza',
-                precioUnitario: precioUnitario
-            });
-
-            // Limpiar campos
-            document.getElementById('materialCategoria').value = '';
-            document.getElementById('materialNombre').value = '';
-            document.getElementById('materialCantidad').value = '';
-            document.getElementById('materialUnidad').value = '';
-            document.getElementById('materialPrecioUnitario').value = '';
-
-            updateMaterialsTable();
-            updateTotals(); // Actualizar totales
-        });
-
-        // Calcular totales (subtotal, overhead, profit, total)
-        function calculateTotals() {
-            const labourCost = parseFloat(document.getElementById('labourCost').value) || 0;
-            const materialsCost = parseFloat(document.getElementById('materialsCost').value) || 0;
-            const equipmentCost = parseFloat(document.getElementById('equipmentCost').value) || 0;
-            const overheadPercent = parseFloat(document.getElementById('overheadPercentage').value) || 0;
-            const profitPercent = parseFloat(document.getElementById('profitMargin').value) || 0;
-
-            // Calcular subtotal de materiales manualmente (si se usan materiales)
-            let materialsListTotal = materials.reduce((sum, m) => sum + (m.cantidad * m.precioUnitario), 0);
-            // Si el usuario también ingresó un valor en materialsCost, podemos sumarlo o reemplazarlo? 
-            // Por simplicidad, usaremos el valor de materiales del formulario y sumaremos el total de la lista.
-            const finalMaterialsCost = materialsCost + materialsListTotal;
-
-            const subtotal = labourCost + finalMaterialsCost + equipmentCost;
-            const overhead = subtotal * (overheadPercent / 100);
-            const withOverhead = subtotal + overhead;
-            const profit = withOverhead * (profitPercent / 100);
-            const total = withOverhead + profit;
-
-            return { subtotal, overhead, profit, total, finalMaterialsCost };
-        }
-
-        function updateTotals() {
-            const totals = calculateTotals();
-            document.getElementById('subtotal').textContent = `$${formatNumber(totals.subtotal)}`;
-            document.getElementById('overhead').textContent = `$${formatNumber(totals.overhead)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(totals.profit)}`;
-            document.getElementById('total').textContent = `$${formatNumber(totals.total)}`;
-        }
-
-        // Escuchar cambios en campos de costos
-        const costInputs = ['labourCost', 'materialsCost', 'equipmentCost', 'overheadPercentage', 'profitMargin'];
-        costInputs.forEach(id => {
-            document.getElementById(id).addEventListener('input', updateTotals);
-        });
-
-        // Envío del formulario vía AJAX
-        const quoteForm = document.getElementById('quoteForm');
-        quoteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            // Recolectar datos del formulario
-            const formData = {
-                projectName: document.getElementById('projectName').value,
-                projectType: document.getElementById('projectType').value,
-                projectLocation: document.getElementById('projectLocation').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                description: document.getElementById('description').value,
-                clientName: document.getElementById('clientName').value,
-                clientEmail: document.getElementById('clientEmail').value,
-                clientPhone: document.getElementById('clientPhone').value,
-                labourCost: parseFloat(document.getElementById('labourCost').value) || 0,
-                materialsCost: parseFloat(document.getElementById('materialsCost').value) || 0,
-                equipmentCost: parseFloat(document.getElementById('equipmentCost').value) || 0,
-                overheadPercentage: parseFloat(document.getElementById('overheadPercentage').value) || 0,
-                profitMargin: parseFloat(document.getElementById('profitMargin').value) || 0,
-                materialsList: materials
-            };
-
-            // Validaciones básicas
-            if (!formData.projectName || !formData.projectType || !formData.projectLocation || !formData.clientName || !formData.clientEmail) {
-                alert('Por favor completa todos los campos obligatorios (*).');
-                return;
-            }
-
-            // Enviar al servidor (simulado, pero crearemos una ruta POST)
-            try {
-                const response = await fetch('{{ route("cotizaciones.guardar") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    // Redirigir a la página de selección de vistas
-                    window.location.href = data.redirect_url;
-                } else {
-                    const error = await response.json();
-                    alert('Error al guardar la cotización: ' + (error.message || 'Error desconocido'));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error de conexión. Intenta de nuevo.');
-            }
-        });
-
-        // Helper: escape HTML
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
             });
         }
-
-        function formatNumber(num) {
-            return num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    });
+    const servicios = [];
+    document.querySelectorAll('.servicio-item').forEach(row => {
+        const servSelect = row.querySelector('.servicio-select');
+        const provSelect = row.querySelector('.prov-servicio-select');
+        const cantidad = row.querySelector('.cantidad-servicio').value;
+        if (servSelect.value && provSelect.value) {
+            servicios.push({
+                mano_obra_id: servSelect.value,
+                proveedor_id: provSelect.value,
+                cantidad: cantidad,
+                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
+            });
         }
+    });
+    document.getElementById('materiales_json').value = JSON.stringify(materiales);
+    document.getElementById('servicios_json').value = JSON.stringify(servicios);
+});
+        </script>
+        
+        <div class="flex justify-end gap-4 mt-8">
+            <a href="{{ route('cotizaciones') }}" class="border border-slate-300 px-6 py-2 rounded-lg">Cancelar</a>
+            <button type="submit" class="bg-slate-800 text-white px-6 py-2 rounded-lg">Guardar Cotización</button>
+        </div>
+    </form>
+</div>
 
-        // Inicializar íconos de Lucide
+<script>
+    lucide.createIcons();
+
+    // ---- Cliente autocomplete (selección) ----
+    const clienteSelect = document.getElementById('cliente_id');
+    const telefonoInput = document.getElementById('telefono');
+    const correoInput = document.getElementById('correo');
+    const clientesData = @json($clientes->map(fn($c) => ['id' => $c->ID_cliente, 'telefono' => $c->telefono, 'correo' => $c->correo_e ?? '']));
+    
+    clienteSelect.addEventListener('change', function() {
+        const selected = clientesData.find(c => c.id == this.value);
+        if (selected) {
+            telefonoInput.value = selected.telefono || '';
+            correoInput.value = selected.correo || '';
+        } else {
+            telefonoInput.value = '';
+            correoInput.value = '';
+        }
+    });
+
+    // ---- Materiales dinámicos ----
+    let materialIndex = 0;
+    let materialesAgregados = []; // almacena temporalmente
+
+    function agregarMaterialRow() {
+        const rowId = `mat_${materialIndex++}`;
+        const html = `
+            <div class="material-item border p-4 rounded-lg relative bg-slate-50" id="${rowId}">
+                <button type="button" class="absolute top-2 right-2 text-red-500 eliminar-material"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Categoría</label>
+                        <select class="categoria-material w-full border px-3 py-2 rounded" data-target="${rowId}">
+                            <option value="">Seleccione</option>
+                            ${categoriasMateriales.map(c => `<option value="${c.id}">${c.text}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Material</label>
+                        <select class="material-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                            <option value="">Primero elija categoría</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Proveedor</label>
+                        <select class="proveedor-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                            <option value="">Primero elija material</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Cantidad</label>
+                        <input type="number" class="cantidad-material w-full border px-3 py-2 rounded" step="0.01" min="0" value="1">
+                    </div>
+                </div>
+                <div class="mt-2 text-right text-emerald-600 font-bold">
+                    Subtotal: <span class="subtotal-material">$0.00</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('materiales-list').insertAdjacentHTML('beforeend', html);
         lucide.createIcons();
-    </script>
+
+        // Eventos
+        const container = document.getElementById(rowId);
+        const catSelect = container.querySelector('.categoria-material');
+        const matSelect = container.querySelector('.material-select');
+        const provSelect = container.querySelector('.proveedor-select');
+        const cantidadInput = container.querySelector('.cantidad-material');
+        const subtotalSpan = container.querySelector('.subtotal-material');
+
+        catSelect.addEventListener('change', async (e) => {
+            const catId = e.target.value;
+            matSelect.disabled = true;
+            matSelect.innerHTML = '<option value="">Cargando...</option>';
+            provSelect.disabled = true;
+            provSelect.innerHTML = '<option value="">Primero elija material</option>';
+            if (!catId) return;
+            const res = await fetch(`/ajax/materiales-por-categoria/${catId}`);
+            const mats = await res.json();
+            matSelect.disabled = false;
+            matSelect.innerHTML = '<option value="">Seleccione material</option>';
+            mats.forEach(m => {
+                matSelect.innerHTML += `<option value="${m.id}" data-medidas="${m.medidas}">${m.text}</option>`;
+            });
+        });
+
+        matSelect.addEventListener('change', async (e) => {
+            const matId = e.target.value;
+            provSelect.disabled = true;
+            provSelect.innerHTML = '<option value="">Cargando...</option>';
+            if (!matId) return;
+            const res = await fetch(`/ajax/proveedores-por-material/${matId}`);
+            const provs = await res.json();
+            provSelect.disabled = false;
+            provSelect.innerHTML = '<option value="">Seleccione proveedor</option>';
+            provs.forEach(p => {
+                provSelect.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-unidad="${p.unidad}">${p.text} - $${p.precio} / ${p.unidad}</option>`;
+            });
+        });
+
+        function calcularSubtotal() {
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const selectedOption = provSelect.options[provSelect.selectedIndex];
+            const precio = selectedOption?.dataset?.precio ? parseFloat(selectedOption.dataset.precio) : 0;
+            const subtotal = cantidad * precio;
+            subtotalSpan.textContent = `$${subtotal.toFixed(2)}`;
+            actualizarTotalesGenerales();
+        }
+
+        cantidadInput.addEventListener('input', calcularSubtotal);
+        provSelect.addEventListener('change', calcularSubtotal);
+    }
+
+    // ---- Servicios dinámicos ----
+    let servicioIndex = 0;
+
+    function agregarServicioRow() {
+        const rowId = `serv_${servicioIndex++}`;
+        const html = `
+            <div class="servicio-item border p-4 rounded-lg relative bg-slate-50" id="${rowId}">
+                <button type="button" class="absolute top-2 right-2 text-red-500 eliminar-servicio"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Categoría de servicio</label>
+                        <select class="cat-servicio w-full border px-3 py-2 rounded" data-target="${rowId}">
+                            <option value="">Seleccione</option>
+                            ${categoriasServicios.map(c => `<option value="${c.id}">${c.text}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Servicio</label>
+                        <select class="servicio-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                            <option value="">Primero elija categoría</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Proveedor</label>
+                        <select class="prov-servicio-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                            <option value="">Primero elija servicio</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Cantidad (unidades)</label>
+                        <input type="number" class="cantidad-servicio w-full border px-3 py-2 rounded" step="0.01" min="0" value="1">
+                    </div>
+                </div>
+                <div class="mt-2 text-right text-emerald-600 font-bold">
+                    Subtotal: <span class="subtotal-servicio">$0.00</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('servicios-list').insertAdjacentHTML('beforeend', html);
+        lucide.createIcons();
+
+        const container = document.getElementById(rowId);
+        const catSelect = container.querySelector('.cat-servicio');
+        const servSelect = container.querySelector('.servicio-select');
+        const provSelect = container.querySelector('.prov-servicio-select');
+        const cantidadInput = container.querySelector('.cantidad-servicio');
+        const subtotalSpan = container.querySelector('.subtotal-servicio');
+
+        catSelect.addEventListener('change', async (e) => {
+            const catId = e.target.value;
+            servSelect.disabled = true;
+            servSelect.innerHTML = '<option value="">Cargando...</option>';
+            provSelect.disabled = true;
+            provSelect.innerHTML = '<option value="">Primero elija servicio</option>';
+            if (!catId) return;
+            const res = await fetch(`/ajax/servicios-por-categoria/${catId}`);
+            const servs = await res.json();
+            servSelect.disabled = false;
+            servSelect.innerHTML = '<option value="">Seleccione servicio</option>';
+            servs.forEach(s => {
+                servSelect.innerHTML += `<option value="${s.id}">${s.text}</option>`;
+            });
+        });
+
+        servSelect.addEventListener('change', async (e) => {
+            const servId = e.target.value;
+            provSelect.disabled = true;
+            provSelect.innerHTML = '<option value="">Cargando...</option>';
+            if (!servId) return;
+            const res = await fetch(`/ajax/proveedores-por-servicio/${servId}`);
+            const provs = await res.json();
+            provSelect.disabled = false;
+            provSelect.innerHTML = '<option value="">Seleccione proveedor</option>';
+            provs.forEach(p => {
+                provSelect.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-unidad="${p.unidad}">${p.text} - $${p.precio} / ${p.unidad}</option>`;
+            });
+        });
+
+        function calcularSubtotal() {
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const selectedOption = provSelect.options[provSelect.selectedIndex];
+            const precio = selectedOption?.dataset?.precio ? parseFloat(selectedOption.dataset.precio) : 0;
+            const subtotal = cantidad * precio;
+            subtotalSpan.textContent = `$${subtotal.toFixed(2)}`;
+            actualizarTotalesGenerales();
+        }
+
+        cantidadInput.addEventListener('input', calcularSubtotal);
+        provSelect.addEventListener('change', calcularSubtotal);
+    }
+
+    // ---- Cálculo global de totales ----
+    function actualizarTotalesGenerales() {
+        let totalMateriales = 0;
+        document.querySelectorAll('.material-item .subtotal-material').forEach(el => {
+            totalMateriales += parseFloat(el.textContent.replace('$', '')) || 0;
+        });
+        let totalServicios = 0;
+        document.querySelectorAll('.servicio-item .subtotal-servicio').forEach(el => {
+            totalServicios += parseFloat(el.textContent.replace('$', '')) || 0;
+        });
+        const subtotal = totalMateriales + totalServicios;
+        const costoEquipo = parseFloat(document.getElementById('costo_equipo').value) || 0;
+        const gastosPercent = parseFloat(document.getElementById('gastos_generales').value) || 0;
+        const margenPercent = parseFloat(document.getElementById('margen_ganancia').value) || 0;
+
+        const base = subtotal + costoEquipo;
+        const gastos = base * (gastosPercent / 100);
+        const conGastos = base + gastos;
+        const margen = conGastos * (margenPercent / 100);
+        const total = conGastos + margen;
+
+        document.getElementById('sumMateriales').innerText = `$${totalMateriales.toFixed(2)}`;
+        document.getElementById('sumServicios').innerText = `$${totalServicios.toFixed(2)}`;
+        document.getElementById('subtotalGeneral').innerText = `$${subtotal.toFixed(2)}`;
+        document.getElementById('montoGastos').innerText = `$${gastos.toFixed(2)}`;
+        document.getElementById('montoMargen').innerText = `$${margen.toFixed(2)}`;
+        document.getElementById('totalFinal').innerText = `$${total.toFixed(2)}`;
+    }
+
+    // Eventos de agregar/eliminar
+    document.getElementById('btnAgregarMaterial').addEventListener('click', agregarMaterialRow);
+    document.getElementById('btnAgregarServicio').addEventListener('click', agregarServicioRow);
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.eliminar-material')) {
+            e.target.closest('.material-item').remove();
+            actualizarTotalesGenerales();
+        }
+        if (e.target.closest('.eliminar-servicio')) {
+            e.target.closest('.servicio-item').remove();
+            actualizarTotalesGenerales();
+        }
+    });
+    document.getElementById('costo_equipo').addEventListener('input', actualizarTotalesGenerales);
+    document.getElementById('gastos_generales').addEventListener('input', actualizarTotalesGenerales);
+    document.getElementById('margen_ganancia').addEventListener('input', actualizarTotalesGenerales);
+
+    // Precargar categorías de materiales y servicios desde PHP
+    const categoriasMateriales = @json($categoriasMateriales);
+    const categoriasServicios = @json($categoriasServicios);
+</script>
 </body>
 </html>

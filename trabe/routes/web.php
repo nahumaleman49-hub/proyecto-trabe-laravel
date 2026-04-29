@@ -25,15 +25,29 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/perfil', [LoginController::class, 'perfil'])->name('perfil');
 Route::put('/perfil', [LoginController::class, 'actualizarPerfil'])->name('perfil.actualizar');
     
+
+// Endpoints AJAX para selects dinámicos (protegidos por auth)
+
 Route::middleware('auth')->group(function () {
     //Rutas con autenticacion
     // home page
     Route::get('/home', function () {return view('home');})->name('home');
-    //Vistas de cotizacion (faltan las rutas para editar, eliminar cotizaciones, mostrar detalles y generar pdf)
+    // Cotizaciones
+    //Vistas de cotizacion (faltan las rutas para editar, mostrar detalles y generar pdf)
     Route::get('/cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones');
     Route::get('/cotizaciones/nueva', [CotizacionController::class, 'create'])->name('cotizaciones.nueva');
-    Route::post('/cotizaciones/guardar', [CotizacionController::class, 'store'])->name('cotizaciones.guardar');
-
+    Route::post('/cotizaciones', [CotizacionController::class, 'store'])->name('cotizaciones.guardar');
+    Route::get('/cotizaciones/{id}', [CotizacionController::class, 'show'])->name('cotizaciones.ver');
+    //endpoints ajax para los selects dinamicos de las cotizaciones
+    Route::prefix('ajax')->middleware('auth')->group(function () {
+        Route::get('/clientes', [AjaxController::class, 'clientes']);                // para autocomplete
+        Route::get('/categorias-materiales', [AjaxController::class, 'categoriasMateriales']);
+        Route::get('/materiales-por-categoria/{id}', [AjaxController::class, 'materialesPorCategoria']);
+        Route::get('/proveedores-por-material/{id}', [AjaxController::class, 'proveedoresPorMaterial']);
+        Route::get('/categorias-servicios', [AjaxController::class, 'categoriasServicios']);
+        Route::get('/servicios-por-categoria/{id}', [AjaxController::class, 'serviciosPorCategoria']);
+        Route::get('/proveedores-por-servicio/{id}', [AjaxController::class, 'proveedoresPorServicio']);
+    });
     //rutas de proveedores
     Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores');
     Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');

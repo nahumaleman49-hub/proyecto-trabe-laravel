@@ -58,36 +58,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($cotizacion as $cotizacion)
-                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                                <td class="py-4 px-4 font-mono text-sm text-slate-600">{{ $cotizacion->ID_cotizacion }}</td>
-                                <td class="py-4 px-4 font-semibold text-slate-800">{{ $cotizacion->fk_id_proyecto }}</td>
-                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->fecha }}</td>
-                                <td class="py-4 px-4 text-slate-600">{{ $cotizacion->estado }}</td>
-                                <td class="py-4 px-4 font-bold text-slate-700">{{ $cotizacion->total }}</td>
+                        @forelse($cotizaciones as $cot)
+                            <tr>
+                                <td class="py-4 px-4">{{ $cot->ID_cotizacion }}</td>
+                                <td class="py-4 px-4">{{ $cot->proyecto->nombre ?? 'N/A' }}</td>
+                                <td class="py-4 px-4">{{ $cot->proyecto->cliente->nombre ?? 'N/A' }}</td>
+                                <td class="py-4 px-4">{{ $cot->fecha->format('d/m/Y') }}</td>
+                                <td class="py-4 px-4">${{ number_format($cot->total, 2) }}</td>
                                 <td class="py-4 px-4">
                                     @php
-                                        $statusColors = [
-                                            'Aprobado' => 'bg-green-100 text-green-700',
-                                            'Pendiente' => 'bg-yellow-100 text-yellow-700',
-                                            'En Revisión' => 'bg-blue-100 text-blue-700',
-                                        ];
-                                        $colorClass = $statusColors[$cotizacion->status] ?? 'bg-slate-100 text-slate-700';
+                                        $estados = ['Borrador', 'Enviada', 'Aprobada', 'Rechazada'];
+                                        $clase = match($cot->estado) {
+                                            0 => 'bg-slate-100 text-slate-700',
+                                            1 => 'bg-blue-100 text-blue-700',
+                                            2 => 'bg-green-100 text-green-700',
+                                            3 => 'bg-red-100 text-red-700',
+                                            default => 'bg-slate-100'
+                                        };
                                     @endphp
-                                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $colorClass }}">
-                                        {{ $cotizacion->status }}
-                                    </span>
+                                    <span class="px-3 py-1 rounded-full text-sm {{ $clase }}">{{ $estados[$cot->estado] }}</span>
                                 </td>
                                 <td class="py-4 px-4">
-                                    <a href="{{ route('cotizaciones', $cotizacion->ID_cotizacion) }}" class="text-slate-600 hover:text-slate-800 font-medium">
-                                        Ver
-                                    </a>
+                                    <a href="{{ route('cotizaciones.ver', $cot->ID_cotizacion) }}" class="text-slate-600 hover:text-slate-800">Ver</a>
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-8 text-slate-500">No hay cotizaciones registradas.</td>
-                            </tr>
+                            <tr><td colspan="7" class="text-center py-8">No hay cotizaciones</td></tr>
                         @endforelse
                     </tbody>
                 </table>
