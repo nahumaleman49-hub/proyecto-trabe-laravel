@@ -2,84 +2,92 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cotizacion;
-use Illuminate\View\View;
+use App\Models\clientes as Cliente;
+use App\Models\proyecto as Proyecto;
+use App\Models\cotizacion as Cotizacion;
+use App\Models\detallecotizacion as DetalleCotizacion;
+use App\Models\categoria as Categoria;
 use Illuminate\Http\Request;
 
 class CotizacionController extends Controller
 {
-    public function index() {
-    $cotizacion = Cotizacion::all(); // o datos de prueba
-    return view('/cotizaciones/cotizaciones', compact('cotizacion'));
+    public function index()
+    {
+        $cotizaciones = Cotizacion::with('proyecto.cliente')->get();
+        return view('cotizaciones.cotizaciones', compact('cotizaciones'));
     }
+
     public function create()
-{
-    return view('cotizaciones.nueva');
-}
-//     public function index(): View
-// {
-//     $cotizaciones = [
-//         (object) [
-//             'id' => 'Q-2024-001',
-//             'project_name' => 'Renovación Residencial',
-//             'cliente' => 'Juan García',
-//             'date' => '20 Feb 2026',
-//             'value' => '$45,000',
-//             'status' => 'Pendiente',
-//         ],
-//     ];
-//     return view('cotizaciones', compact('cotizaciones'));
-// }
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'projectName' => 'required|string|max:255',
-        'projectType' => 'required|string|max:100',
-        'projectLocation' => 'required|string|max:255',
-        'startDate' => 'nullable|date',
-        'endDate' => 'nullable|date|after_or_equal:startDate',
-        'description' => 'nullable|string',
-        'clientName' => 'required|string|max:255',
-        'clientEmail' => 'required|email|max:255',
-        'clientPhone' => 'nullable|string|max:20',
-        'labourCost' => 'required|numeric|min:0',
-        'materialsCost' => 'required|numeric|min:0',
-        'equipmentCost' => 'nullable|numeric|min:0',
-        'overheadPercentage' => 'nullable|numeric|min:0|max:100',
-        'profitMargin' => 'nullable|numeric|min:0|max:100',
-        'materialsList' => 'nullable|array',
-        'materialsList.*.categoria' => 'nullable|string',
-        'materialsList.*.material' => 'required|string',
-        'materialsList.*.cantidad' => 'required|numeric|min:0.01',
-        'materialsList.*.unidad' => 'required|string',
-        'materialsList.*.precioUnitario' => 'required|numeric|min:0',
-    ]);
-
-    session(['cotizacion_temporal' => $validated]);
-
-    return response()->json([
-        'redirect_url' => route('cotizaciones.seleccion-vista')
-    ]);
-}
-
-public function seleccionVista()
-{
-    if (!session()->has('cotizacion_temporal')) {
-        return redirect()->route('cotizaciones.nueva');
+    {
+        $clientes = Cliente::all();
+        $categoriasMateriales = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
+        $categoriasServicios = Categoria::whereHas('servicios')->get(['ID_Categoria as id', 'nombre as text']);
+        return view('cotizaciones.nueva', compact('clientes', 'categoriasMateriales', 'categoriasServicios'));
     }
-    return view('cotizaciones.seleccion-vista');
-}
 
-public function vistaCliente()
-{
-    $data = session('cotizacion_temporal');
-    return view('cotizaciones.vista-cliente', compact('data'));
-}
+    public function store(Request $request)
+    {
+        // 1. Crear proyecto
+        $proyecto = Proyecto::create([
+            'nombre' => $request->nombre_proyecto,
+            'fk_id_cliente' => $request->cliente_id,
+            'estado' => 1, // Activo por defecto
+            'fecha_ini' => now(),
+            'fecha_fin' => null,
+            'presupuesto' => 0, // se actualizará con el total de la cotización
+        ]);
 
-public function vistaIngeniero()
-{
-    $data = session('cotizacion_temporal');
-    return view('cotizaciones.vista-ingeniero', compact('data'));
-}
+        // 2. Crear cotización
+        $cotizacion = Cotizacion::create([
+            'fk_id_proyecto' => $proyecto->ID_proyecto,
+            'fecha' => now(),
+            'estado' => 0, // Borrador (0)
+            'total' => 0,
+        ]);
 
+        $total = 0;
+
+        // 3. Guardar materiales (vienen en el formulario mediante campos dinámicos)
+        //    Por simplicidad, enviaremos los datos mediante un array en el request.
+        //    En tu vista deberás agregar inputs ocultos con los datos seleccionados.
+        //    Para no complicar, asumiré que envías `materiales` y `servicios` como JSON.
+        $materiales = json_decode($request->materiales_json, true) ?? [];
+        foreach ($materiales as $mat) {
+            $detalle = DetalleCotizacion::create([
+                'fk_id_cotizacion' => $cotizacion->ID_cotizacion,
+                'fk_id_material' => $mat['material_id'],
+                'fk_id_proveedor' => $mat['proveedor_id'],
+                'cantidad' => $mat['cantidad'],
+                'precio_unit' => $mat['precio_unitario'],
+                'fk_id_mano_obra' => null,
+            ]);
+            $total += $detalle->cantidad * $detalle->precio_unit;
+        }
+
+        $servicios = json_decode($request->servicios_json, true) ?? [];
+        foreach ($servicios as $serv) {
+            $detalle = DetalleCotizacion::create([
+                'fk_id_cotizacion' => $cotizacion->ID_cotizacion,
+                'fk_id_material' => null,
+                'fk_id_proveedor' => $serv['proveedor_id'],
+                'cantidad' => $serv['cantidad'],
+                'precio_unit' => $serv['precio_unitario'],
+                'fk_id_mano_obra' => $serv['mano_obra_id'],
+            ]);
+            $total += $detalle->cantidad * $detalle->precio_unit;
+        }
+
+        // 4. Calcular total final con gastos y margen
+        $costoEquipo = $request->costo_equipo ?? 0;
+        $gastosPorc = $request->gastos_generales ?? 0;
+        $margenPorc = $request->margen_ganancia ?? 0;
+        $subtotalBase = $total + $costoEquipo;
+        $conGastos = $subtotalBase * (1 + $gastosPorc / 100);
+        $totalFinal = $conGastos * (1 + $margenPorc / 100);
+
+        $cotizacion->update(['total' => $totalFinal]);
+        $proyecto->update(['presupuesto' => $totalFinal]);
+
+        return redirect()->route('cotizaciones')->with('success', 'Cotización generada correctamente.');
+    }
 }
