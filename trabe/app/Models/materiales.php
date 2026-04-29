@@ -40,7 +40,7 @@ class materiales extends Model
 
     public function abastecimientos()
     {
-        return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_material');
+        return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_Material');
     }
 
     public $timestamps = false;
