@@ -44,8 +44,8 @@
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Agregar Nuevo Cliente</h2>
-                    <p class="text-slate-600 text-lg">Registra un nuevo cliente en tu base de datos</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2"></h2>
+                    <p class="text-slate-600 text-lg">Registra un nuevo cliente en el sistema</p>
                 </div>
                 <a href="{{ route('clientes.agregar') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>

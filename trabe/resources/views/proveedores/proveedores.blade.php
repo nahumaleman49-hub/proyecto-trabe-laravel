@@ -15,7 +15,7 @@
             <div class="text-center text-white">
                 <i data-lucide="package" class="w-16 h-16 mx-auto mb-4"></i>
                 <h1 class="text-5xl font-bold mb-2">Proveedores</h1>
-                <p class="text-xl text-slate-300">Gestiona tus socios comerciales</p>
+                <p class="text-xl text-slate-300">Visualiza a tus socios comerciales</p>
             </div>
         </div>
     </div>
@@ -31,12 +31,12 @@
         <div class="bg-white rounded-2xl p-6 shadow-lg mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800 mb-1">Agregar Nuevo Proveedor</h2>
-                    <p class="text-slate-600">Registra un nuevo proveedor en tu red</p>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-1"></h2>
+                    <p class="text-slate-600">Proveedores de materiales, servicios y mano de obra</p>
                 </div>
                 <a href="{{ route('proveedores.crear') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>
-                    Nuevo Proveedor
+                    Añadir nuevo Proveedor
                 </a>
             </div>
         </div>

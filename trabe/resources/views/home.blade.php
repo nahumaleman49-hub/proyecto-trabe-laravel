@@ -14,10 +14,15 @@
         <div class="content-wrapper">
             {{-- Barra superior con botón de logout --}}
             <div class="top-bar">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="logout-btn">Cerrar Sesión</button>
-                </form>
+                <div class="top-bar flex gap-4">
+                    <form action="{{ route('perfil') }}">
+                        <button class= "logout-btn">Mi Perfil</button>
+                    </form>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="logout-btn">Cerrar Sesión</button>
+                    </form>
+                </div>
             </div>
 
             {{-- Área de marca --}}

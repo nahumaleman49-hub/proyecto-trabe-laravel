@@ -22,6 +22,8 @@ use App\Http\Controllers\ProveedorController;
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/perfil', [LoginController::class, 'perfil'])->name('perfil');
+Route::put('/perfil', [LoginController::class, 'actualizarPerfil'])->name('perfil.actualizar');
     
 Route::middleware('auth')->group(function () {
     //Rutas con autenticacion

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
 
 class LoginController extends Controller
 {
@@ -39,5 +42,51 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    // Método para mostrar formulario de perfil
+    public function perfil()
+    {
+        return view('perfil');
+    }
+
+    // Método para actualizar perfil
+    public function actualizarPerfil(Request $request)
+    {
+        $user = auth()->user();
+        
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        ];
+        
+        // Si se envía nueva contraseña, validarla y también la actual
+        if ($request->filled('new_password')) {
+            $rules['current_password'] = 'required|string';
+            $rules['new_password'] = 'required|string|min:8|confirmed';
+        }
+        
+        $request->validate($rules);
+        
+        // Verificar contraseña actual si se va a cambiar algo sensible (email o password)
+        if ($request->filled('new_password') || $request->email != $user->email) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => 'La contraseña actual es incorrecta.',
+                ]);
+            }
+        }
+        
+        // Actualizar datos
+        $user->name = $request->name;
+        $user->email = $request->email;
+        
+        if ($request->filled('new_password')) {
+            $user->password = Hash::make($request->new_password);
+        }
+        
+        $user->save();
+        
+        return redirect()->route('perfil')->with('success', 'Perfil actualizado correctamente.');   
     }
 }

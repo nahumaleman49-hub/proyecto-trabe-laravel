@@ -8,10 +8,18 @@ use Illuminate\Http\Request;
 
 class ProyectoController extends Controller
 {
-    public function index()
-    {
-        $proyectos = Proyecto::with('cliente')->get();
-        return view('proyectos.proyectos ', compact('proyectos'));
+    public function index(Request $request){
+    $search = $request->input('search');
+    
+    $proyectos = Proyecto::with('cliente')
+        ->when($search, function ($query, $search) {
+            return $query->whereHas('cliente', function ($q) use ($search) {
+                $q->where('nombre', 'LIKE', "%{$search}%");
+            });
+        })
+        ->get();
+
+    return view('proyectos.proyectos', compact('proyectos', 'search'));
     }
 
     public function agregar()
@@ -40,7 +48,7 @@ class ProyectoController extends Controller
     {
         $proyecto = Proyecto::findOrFail($id);
         $clientes = Cliente::all();
-        return view('proyectos.modificar', compact('proyecto', 'clientes'));
+        return view('proyectos.proyectos-agregar', compact('proyecto', 'clientes'));
     }
 
     public function actualizar(Request $request, $id)
@@ -57,7 +65,7 @@ class ProyectoController extends Controller
         $proyecto = Proyecto::findOrFail($id);
         $proyecto->update($request->all());
 
-        return redirect()->route('proyectos.actualizar')->with('success', 'Proyecto actualizado correctamente.');
+        return redirect()->route('proyectos')->with('success', 'Proyecto actualizado correctamente.');
     }
 
     public function eliminar($id)
