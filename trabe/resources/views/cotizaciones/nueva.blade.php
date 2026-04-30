@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Cotización</title>
+    <title>{{ isset($cotizacion) ? 'Editar Cotización' : 'Nueva Cotización' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -18,7 +18,7 @@
         <div class="flex items-center gap-4">
             <i data-lucide="file-text" class="w-12 h-12"></i>
             <div>
-                <h1 class="text-4xl font-bold">Nueva Cotización</h1>
+                <h1 class="text-4xl font-bold">{{ isset($cotizacion) ? 'Editar Cotización' : 'Nueva Cotización' }}</h1>
                 <p class="text-slate-300">Selecciona cliente, materiales y servicios</p>
             </div>
         </div>
@@ -26,24 +26,29 @@
 </div>
 
 <div class="container mx-auto px-4 py-8">
-    <form id="cotizacionForm" method="POST" action="{{ route('cotizaciones.guardar') }}">
+    <form id="cotizacionForm" method="POST" action="{{ isset($cotizacion) ? route('cotizaciones.actualizar', $cotizacion->ID_cotizacion) : route('cotizaciones.guardar') }}">
         @csrf
+        @if(isset($cotizacion)) @method('PUT') @endif
+
         <input type="hidden" name="materiales_json" id="materiales_json">
         <input type="hidden" name="servicios_json" id="servicios_json">
+
         {{-- 1. Datos del proyecto y cliente --}}
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
             <h2 class="text-2xl font-bold mb-4">Proyecto y Cliente</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block font-semibold mb-2">Nombre del Proyecto *</label>
-                    <input type="text" name="nombre_proyecto" required class="w-full border rounded-lg px-4 py-2">
+                    <input type="text" name="nombre_proyecto" id="nombre_proyecto" required class="w-full border rounded-lg px-4 py-2" value="{{ old('nombre_proyecto', $cotizacion->proyecto->nombre ?? '') }}">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Cliente *</label>
                     <select name="cliente_id" id="cliente_id" required class="w-full border rounded-lg px-4 py-2">
                         <option value="">Seleccione cliente</option>
                         @foreach($clientes as $cliente)
-                            <option value="{{ $cliente->ID_cliente }}">{{ $cliente->nombre }}</option>
+                            <option value="{{ $cliente->ID_cliente }}" {{ (old('cliente_id', $cotizacion->proyecto->fk_id_cliente ?? '') == $cliente->ID_cliente) ? 'selected' : '' }}>
+                                {{ $cliente->nombre }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -90,15 +95,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block font-semibold mb-2">Costo de Equipo ($)</label>
-                    <input type="number" name="costo_equipo" id="costo_equipo" value="0" step="0.01" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="costo_equipo" id="costo_equipo" value="{{ old('costo_equipo', $costoEquipo ?? 0) }}" step="0.01" class="w-full border rounded-lg px-4 py-2">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Gastos Generales (%)</label>
-                    <input type="number" name="gastos_generales" id="gastos_generales" value="10" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="gastos_generales" id="gastos_generales" value="{{ old('gastos_generales', $gastosPorc ?? 10) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Margen de Ganancia (%)</label>
-                    <input type="number" name="margen_ganancia" id="margen_ganancia" value="15" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="margen_ganancia" id="margen_ganancia" value="{{ old('margen_ganancia', $margenPorc ?? 15) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
                 </div>
             </div>
         </div>
@@ -115,42 +120,7 @@
                 <div class="flex justify-between text-2xl font-bold pt-2 border-t"><span>Total Cotización:</span><span id="totalFinal">$0.00</span></div>
             </div>
         </div>
-        <script>
-            document.getElementById('cotizacionForm').addEventListener('submit', function(e) {
-    const materiales = [];
-    document.querySelectorAll('.material-item').forEach(row => {
-        const catSelect = row.querySelector('.categoria-material');
-        const matSelect = row.querySelector('.material-select');
-        const provSelect = row.querySelector('.proveedor-select');
-        const cantidad = row.querySelector('.cantidad-material').value;
-        if (matSelect.value && provSelect.value) {
-            materiales.push({
-                material_id: matSelect.value,
-                proveedor_id: provSelect.value,
-                cantidad: cantidad,
-                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
-            });
-        }
-    });
-    const servicios = [];
-    document.querySelectorAll('.servicio-item').forEach(row => {
-        const servSelect = row.querySelector('.servicio-select');
-        const provSelect = row.querySelector('.prov-servicio-select');
-        const cantidad = row.querySelector('.cantidad-servicio').value;
-        if (servSelect.value && provSelect.value) {
-            servicios.push({
-                mano_obra_id: servSelect.value,
-                proveedor_id: provSelect.value,
-                cantidad: cantidad,
-                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
-            });
-        }
-    });
-    document.getElementById('materiales_json').value = JSON.stringify(materiales);
-    document.getElementById('servicios_json').value = JSON.stringify(servicios);
-});
-        </script>
-        
+
         <div class="flex justify-end gap-4 mt-8">
             <a href="{{ route('cotizaciones') }}" class="border border-slate-300 px-6 py-2 rounded-lg">Cancelar</a>
             <button type="submit" class="bg-slate-800 text-white px-6 py-2 rounded-lg">Guardar Cotización</button>
@@ -165,7 +135,11 @@
     const clienteSelect = document.getElementById('cliente_id');
     const telefonoInput = document.getElementById('telefono');
     const correoInput = document.getElementById('correo');
-    const clientesData = @json($clientes->map(fn($c) => ['id' => $c->ID_cliente, 'telefono' => $c->telefono, 'correo' => $c->correo_e ?? '']));
+    const clientesData = {!! json_encode($clientes->map(function($c) {
+        return ['id' => $c->ID_cliente, 'telefono' => $c->telefono, 'correo' => $c->correo_e ?? ''];
+        })->values()) !!};
+    const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
+    const categoriasServicios = {!! json_encode($categoriasServicios) !!};
     
     clienteSelect.addEventListener('change', function() {
         const selected = clientesData.find(c => c.id == this.value);
@@ -178,11 +152,16 @@
         }
     });
 
-    // ---- Materiales dinámicos ----
-    let materialIndex = 0;
-    let materialesAgregados = []; // almacena temporalmente
+    // Datos de categorías y proveedores (se llenan desde PHP)
+    const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
+    const categoriasServicios = {!! json_encode($categoriasServicios) !!};
 
-    function agregarMaterialRow() {
+    // Variables para índices
+    let materialIndex = 0;
+    let servicioIndex = 0;
+
+    // ---- Materiales dinámicos ----
+    function agregarMaterialConDatos(datos = null) {
         const rowId = `mat_${materialIndex++}`;
         const html = `
             <div class="material-item border p-4 rounded-lg relative bg-slate-50" id="${rowId}">
@@ -209,7 +188,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">Cantidad</label>
-                        <input type="number" class="cantidad-material w-full border px-3 py-2 rounded" step="0.01" min="0" value="1">
+                        <input type="number" class="cantidad-material w-full border px-3 py-2 rounded" step="0.01" min="0" value="${datos ? datos.cantidad : 1}">
                     </div>
                 </div>
                 <div class="mt-2 text-right text-emerald-600 font-bold">
@@ -220,7 +199,6 @@
         document.getElementById('materiales-list').insertAdjacentHTML('beforeend', html);
         lucide.createIcons();
 
-        // Eventos
         const container = document.getElementById(rowId);
         const catSelect = container.querySelector('.categoria-material');
         const matSelect = container.querySelector('.material-select');
@@ -269,12 +247,27 @@
 
         cantidadInput.addEventListener('input', calcularSubtotal);
         provSelect.addEventListener('change', calcularSubtotal);
+
+        // Si hay datos precargados, asignarlos
+        if (datos) {
+            setTimeout(() => {
+                catSelect.value = datos.categoria_id;
+                catSelect.dispatchEvent(new Event('change'));
+                setTimeout(() => {
+                    matSelect.value = datos.material_id;
+                    matSelect.dispatchEvent(new Event('change'));
+                    setTimeout(() => {
+                        provSelect.value = datos.proveedor_id;
+                        provSelect.dispatchEvent(new Event('change'));
+                        cantidadInput.dispatchEvent(new Event('input'));
+                    }, 300);
+                }, 300);
+            }, 100);
+        }
     }
 
     // ---- Servicios dinámicos ----
-    let servicioIndex = 0;
-
-    function agregarServicioRow() {
+    function agregarServicioConDatos(datos = null) {
         const rowId = `serv_${servicioIndex++}`;
         const html = `
             <div class="servicio-item border p-4 rounded-lg relative bg-slate-50" id="${rowId}">
@@ -301,7 +294,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">Cantidad (unidades)</label>
-                        <input type="number" class="cantidad-servicio w-full border px-3 py-2 rounded" step="0.01" min="0" value="1">
+                        <input type="number" class="cantidad-servicio w-full border px-3 py-2 rounded" step="0.01" min="0" value="${datos ? datos.cantidad : 1}">
                     </div>
                 </div>
                 <div class="mt-2 text-right text-emerald-600 font-bold">
@@ -360,6 +353,22 @@
 
         cantidadInput.addEventListener('input', calcularSubtotal);
         provSelect.addEventListener('change', calcularSubtotal);
+
+        if (datos) {
+            setTimeout(() => {
+                catSelect.value = datos.categoria_id;
+                catSelect.dispatchEvent(new Event('change'));
+                setTimeout(() => {
+                    servSelect.value = datos.servicio_id;
+                    servSelect.dispatchEvent(new Event('change'));
+                    setTimeout(() => {
+                        provSelect.value = datos.proveedor_id;
+                        provSelect.dispatchEvent(new Event('change'));
+                        cantidadInput.dispatchEvent(new Event('input'));
+                    }, 300);
+                }, 300);
+            }, 100);
+        }
     }
 
     // ---- Cálculo global de totales ----
@@ -391,9 +400,9 @@
         document.getElementById('totalFinal').innerText = `$${total.toFixed(2)}`;
     }
 
-    // Eventos de agregar/eliminar
-    document.getElementById('btnAgregarMaterial').addEventListener('click', agregarMaterialRow);
-    document.getElementById('btnAgregarServicio').addEventListener('click', agregarServicioRow);
+    // ---- Eventos de agregar y eliminar ----
+    document.getElementById('btnAgregarMaterial').addEventListener('click', () => agregarMaterialConDatos());
+    document.getElementById('btnAgregarServicio').addEventListener('click', () => agregarServicioConDatos());
     document.addEventListener('click', function(e) {
         if (e.target.closest('.eliminar-material')) {
             e.target.closest('.material-item').remove();
@@ -408,9 +417,67 @@
     document.getElementById('gastos_generales').addEventListener('input', actualizarTotalesGenerales);
     document.getElementById('margen_ganancia').addEventListener('input', actualizarTotalesGenerales);
 
-    // Precargar categorías de materiales y servicios desde PHP
-    const categoriasMateriales = @json($categoriasMateriales);
-    const categoriasServicios = @json($categoriasServicios);
+    // ---- Precargar datos existentes (modo edición) ----
+    @if(isset($cotizacion))
+        // Materiales precargados
+        @if(isset($cotizacion))
+    const materialesExistentes = {!! json_encode($cotizacion->detalles->whereNotNull('fk_id_material')->map(function($d) {
+        return [
+            'material_id' => $d->fk_id_material,
+            'proveedor_id' => $d->fk_id_proveedor,
+            'cantidad' => $d->cantidad,
+            'categoria_id' => $d->material->fk_id_categoria ?? null,
+        ];
+    })->values()) !!};
+    materialesExistentes.forEach(mat => agregarMaterialConDatos(mat));
+
+    const serviciosExistentes = {!! json_encode($cotizacion->detalles->whereNotNull('fk_id_mano_obra')->map(function($d) {
+        return [
+            'servicio_id' => $d->fk_id_mano_obra,
+            'proveedor_id' => $d->fk_id_proveedor,
+            'cantidad' => $d->cantidad,
+            'categoria_id' => $d->manoObra->servicio->fk_id_categoria ?? null,
+        ];
+    })->values()) !!};
+    serviciosExistentes.forEach(serv => agregarServicioConDatos(serv));
+    @endif
+    @endif
+    // Disparar el cálculo de totales después de un breve tiempo (para que los subtotales se calculen)
+    setTimeout(actualizarTotalesGenerales, 500);
+
+    // Envío del formulario
+    document.getElementById('cotizacionForm').addEventListener('submit', function(e) {
+        const materiales = [];
+        document.querySelectorAll('.material-item').forEach(row => {
+            const matSelect = row.querySelector('.material-select');
+            const provSelect = row.querySelector('.proveedor-select');
+            const cantidad = row.querySelector('.cantidad-material').value;
+            if (matSelect.value && provSelect.value) {
+                materiales.push({
+                    material_id: matSelect.value,
+                    proveedor_id: provSelect.value,
+                    cantidad: cantidad,
+                    precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
+                });
+            }
+        });
+        const servicios = [];
+        document.querySelectorAll('.servicio-item').forEach(row => {
+            const servSelect = row.querySelector('.servicio-select');
+            const provSelect = row.querySelector('.prov-servicio-select');
+            const cantidad = row.querySelector('.cantidad-servicio').value;
+            if (servSelect.value && provSelect.value) {
+                servicios.push({
+                    mano_obra_id: servSelect.value,
+                    proveedor_id: provSelect.value,
+                    cantidad: cantidad,
+                    precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
+                });
+            }
+        });
+        document.getElementById('materiales_json').value = JSON.stringify(materiales);
+        document.getElementById('servicios_json').value = JSON.stringify(servicios);
+    });
 </script>
 </body>
 </html>

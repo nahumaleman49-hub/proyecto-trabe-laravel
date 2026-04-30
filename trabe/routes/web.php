@@ -9,6 +9,7 @@ use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\AjaxController;
 
 /*
 |-----------------------------------------------------------------------
@@ -26,8 +27,6 @@ Route::get('/perfil', [LoginController::class, 'perfil'])->name('perfil');
 Route::put('/perfil', [LoginController::class, 'actualizarPerfil'])->name('perfil.actualizar');
     
 
-// Endpoints AJAX para selects dinámicos (protegidos por auth)
-
 Route::middleware('auth')->group(function () {
     //Rutas con autenticacion
     // home page
@@ -38,6 +37,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/cotizaciones/nueva', [CotizacionController::class, 'create'])->name('cotizaciones.nueva');
     Route::post('/cotizaciones', [CotizacionController::class, 'store'])->name('cotizaciones.guardar');
     Route::get('/cotizaciones/{id}', [CotizacionController::class, 'show'])->name('cotizaciones.ver');
+    Route::get('/cotizaciones/{id}/editar', [CotizacionController::class, 'edit'])->name('cotizaciones.editar');
+    Route::put('/cotizaciones/{id}', [CotizacionController::class, 'update'])->name('cotizaciones.actualizar');
+    Route::get('/cotizaciones/{id}/pdf', [CotizacionController::class, 'pdf'])->name('cotizaciones.pdf');
     //endpoints ajax para los selects dinamicos de las cotizaciones
     Route::prefix('ajax')->middleware('auth')->group(function () {
         Route::get('/clientes', [AjaxController::class, 'clientes']);                // para autocomplete

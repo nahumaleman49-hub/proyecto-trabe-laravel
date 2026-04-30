@@ -90,4 +90,122 @@ class CotizacionController extends Controller
 
         return redirect()->route('cotizaciones')->with('success', 'Cotización generada correctamente.');
     }
+    
+    public function show($id)
+    {
+        $cotizacion = Cotizacion::with([
+            'proyecto.cliente',
+            'detalles.material',
+            'detalles.manoObra.servicio',
+            'detalles.proveedor'
+        ])->findOrFail($id);
+
+        return view('cotizaciones.ver', compact('cotizacion'));
+    }
+    public function pdf($id){
+    
+    return redirect()->route('cotizaciones.ver', $id)->with('info', 'La generación de PDF estará disponible próximamente.');
+    }
+
+    public function edit($id)
+{
+    $cotizacion = Cotizacion::with([
+        'proyecto.cliente',
+        'detalles.material',
+        'detalles.manoObra.servicio',
+        'detalles.proveedor'
+    ])->findOrFail($id);
+
+    // Calcular valores actuales de gastos y margen (puedes ajustar según tu lógica)
+    // Puedes obtenerlos de la cotización si los guardaste, o usar por defecto
+    $costoEquipo = 0; // Si no lo guardaste, puedes calcularlo o dejarlo en 0
+    $gastosPorc = 10;
+    $margenPorc = 15;
+
+    // Opcional: si tienes estos campos en la cotización, cárgalos
+    // $costoEquipo = $cotizacion->costo_equipo ?? 0;
+    // $gastosPorc = $cotizacion->gastos_generales ?? 10;
+    // $margenPorc = $cotizacion->margen_ganancia ?? 15;
+
+    $clientes = Cliente::all();
+    $categoriasMateriales = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
+    $categoriasServicios = Categoria::whereHas('servicios')->get(['ID_Categoria as id', 'nombre as text']);
+
+    return view('cotizaciones.nueva', compact(
+        'cotizacion', 'clientes', 'categoriasMateriales', 'categoriasServicios',
+        'costoEquipo', 'gastosPorc', 'margenPorc'
+    ));
+}
+
+    public function update(Request $request, $id)
+    {
+    $cotizacion = Cotizacion::findOrFail($id);
+
+    // Validar datos del proyecto
+    $validated = $request->validate([
+        'nombre_proyecto' => 'required|string|max:50',
+        'cliente_id' => 'required|exists:clientes,ID_cliente',
+        'costo_equipo' => 'nullable|numeric',
+        'gastos_generales' => 'nullable|numeric',
+        'margen_ganancia' => 'nullable|numeric',
+        'materiales_json' => 'nullable|json',
+        'servicios_json' => 'nullable|json',
+    ]);
+
+    // Actualizar o crear el proyecto asociado (podría estar vinculado, pero asumimos que la cotización ya tiene proyecto)
+    $proyecto = $cotizacion->proyecto;
+    $proyecto->nombre = $validated['nombre_proyecto'];
+    $proyecto->fk_id_cliente = $validated['cliente_id'];
+    // Opcional: guardar fechas? Si no están en el formulario, las dejamos como están
+    $proyecto->save();
+
+    // Eliminar detalles antiguos
+    $cotizacion->detalles()->delete();
+
+    $materiales = json_decode($request->materiales_json, true) ?? [];
+    $servicios = json_decode($request->servicios_json, true) ?? [];
+
+    $subtotal = 0;
+
+    foreach ($materiales as $mat) {
+        $detalle = $cotizacion->detalles()->create([
+            'fk_id_material' => $mat['material_id'],
+            'fk_id_proveedor' => $mat['proveedor_id'],
+            'cantidad' => $mat['cantidad'],
+            'precio_unit' => $mat['precio_unitario'],
+            'fk_id_mano_obra' => null,
+        ]);
+        $subtotal += $detalle->cantidad * $detalle->precio_unit;
+    }
+
+    foreach ($servicios as $serv) {
+        $detalle = $cotizacion->detalles()->create([
+            'fk_id_material' => null,
+            'fk_id_proveedor' => $serv['proveedor_id'],
+            'cantidad' => $serv['cantidad'],
+            'precio_unit' => $serv['precio_unitario'],
+            'fk_id_mano_obra' => $serv['mano_obra_id'],
+        ]);
+        $subtotal += $detalle->cantidad * $detalle->precio_unit;
+    }
+
+    // Calcular total con gastos y margen
+    $costoEquipo = $request->costo_equipo ?? 0;
+    $gastosPorc = $request->gastos_generales ?? 0;
+    $margenPorc = $request->margen_ganancia ?? 0;
+
+    $subtotalBase = $subtotal + $costoEquipo;
+    $conGastos = $subtotalBase * (1 + $gastosPorc / 100);
+    $totalFinal = $conGastos * (1 + $margenPorc / 100);
+
+    $cotizacion->update([
+        'total' => $totalFinal,
+        // estado se puede mantener o resetear a Borrador si se editó
+        'estado' => 0,
+    ]);
+
+    $proyecto->update(['presupuesto' => $totalFinal]);
+
+    return redirect()->route('cotizaciones')->with('success', 'Cotización actualizada correctamente.');
+    }
 }

@@ -20,6 +20,10 @@ class cotizacion extends Model
         'estado',
         'total'
     ];
+    protected $casts = [
+    'fecha' => 'date',
+    'estado' => 'integer',
+    ];
 
     public function proyecto()
     {
