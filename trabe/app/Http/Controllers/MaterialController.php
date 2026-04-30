@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\materiales as Material;
 use App\Models\categoria as Categoria;
 use App\Models\proveedores as Proveedor; 
-use App\Models\abastecimiento as Abastecimiento;
+use App\Models\abastecimiento as abastecimiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class MaterialController extends Controller
 {
+    /**
+     * Lista principal de materiales con buscador
+     */
     public function index(Request $request)
     {
-        $query = Material::with(['categoria', 'abastecimientos.proveedor']);
+        $query = Material::with(['categoria', 'abastecimiento.proveedor']);
 
         if ($request->has('buscar') && $request->buscar != '') {
             $termino = $request->buscar;
@@ -28,12 +31,18 @@ class MaterialController extends Controller
         return view('materiales.materiales', compact('materiales'));
     }
 
+    /**
+     * Formulario para agregar material
+     */
     public function agregar()
     {
         $categorias = Categoria::all(); 
         return view('materiales.materialesagregar', compact('categorias'));
     }
 
+    /**
+     * Guardar nuevo material
+     */
     public function guardar(Request $request)
     {
         $request->validate([
@@ -45,28 +54,29 @@ class MaterialController extends Controller
 
         try {
             Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
-
             return redirect()->route('materiales.index')->with('success', 'Material creado exitosamente.');
-            
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => 'Ocurrió un error al guardar: ' . $e->getMessage()]);
         }
     }
 
+    /**
+     * Formulario de edición
+     */
     public function editar($id)
     {
-        $material = Material::with('abastecimientos.proveedor')->findOrFail($id);
+        $material = Material::with('abastecimiento.proveedor')->findOrFail($id);
         $categorias = Categoria::all();
-        
-        // Filtramos proveedores que vendan materiales para la lógica bidireccional
         $proveedores = Proveedor::whereIn('tipo', ['Materiales', 'Ambos'])->get();
         
         return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedores'));
     }
 
+    /**
+     * Actualizar material existente
+     */
     public function actualizar(Request $request, $id)
     {
-        // Validamos asegurando que ignore el ID actual para permitir la edición
         $request->validate([
             'nombre' => 'required|string|max:100|unique:materiales,nombre,' . $id . ',ID_Material',
             'codigo' => 'required|string|max:20|unique:materiales,codigo,' . $id . ',ID_Material',
@@ -77,23 +87,22 @@ class MaterialController extends Controller
         try {
             $material = Material::findOrFail($id);
             $material->update($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
-
             return redirect()->route('materiales.index')->with('success', 'Material actualizado correctamente.');
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
         }
     }
 
+    /**
+     * Eliminar material
+     */
     public function eliminar($id)
     {
         try {
             DB::beginTransaction();
-            
             $material = Material::findOrFail($id);
-            // Limpiamos la tabla pivote antes de eliminar el material
-            Abastecimiento::where('fk_id_material', $id)->delete();
+            abastecimiento::where('fk_id_material', $id)->delete();
             $material->delete();
-
             DB::commit();
             return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
         } catch (Exception $e) {
@@ -102,6 +111,9 @@ class MaterialController extends Controller
         }
     }
 
+    /**
+     * Vinculación individual (Manual)
+     */
     public function vincularProveedor(Request $request)
     {
         $request->validate([
@@ -110,35 +122,86 @@ class MaterialController extends Controller
             'precio' => 'required|numeric|min:0',
         ]);
 
-        // Verificamos si la relación ya existe para evitar duplicidad de registros en la tabla pivote
-        $existe = Abastecimiento::where('fk_id_material', $request->fk_id_material)
-                                ->where('fk_id_proveedor', $request->fk_id_proveedor)
-                                ->first();
+        abastecimiento::updateOrCreate(
+            [
+                'fk_id_material' => $request->fk_id_material,
+                'fk_id_proveedor' => $request->fk_id_proveedor
+            ],
+            ['precio' => $request->precio]
+        );
 
-        if ($existe) {
-            $existe->update(['precio' => $request->precio]);
-            $mensaje = "Precio actualizado correctamente.";
-        } else {
-            Abastecimiento::create($request->all());
-            $mensaje = "Proveedor vinculado correctamente.";
-        }
-
-        return back()->with('success', $mensaje);
+        return back()->with('success', 'Vinculación procesada correctamente.');
     }
 
-    public function desvincularProveedor($ID_Material, $ID_proveedor)
+    /**
+     * Carga Masiva "TODO EN UNO" vía CSV
+     * CORREGIDO: Sin columna 'unidad' en tabla abastecimiento
+     */
+    public function importarDesdeCSV(Request $request)
     {
-        try {
-            Abastecimiento::where('fk_id_material', $ID_Material)
-                          ->where('fk_id_proveedor', $ID_proveedor)
-                          ->delete();
+        $request->validate([
+            'fk_id_proveedor' => 'required|exists:proveedores,ID_proveedor',
+            'archivo_csv' => 'required|mimes:csv,txt|max:2048',
+        ]);
 
-            return back()->with('success', 'Proveedor desvinculado correctamente.');
+        $file = $request->file('archivo_csv');
+        $handle = fopen($file->getRealPath(), 'r');
+        fgetcsv($handle); // Ignorar encabezados
+
+        try {
+            DB::beginTransaction();
+            $contador = 0;
+            $ahora = now();
+
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                if (count($data) >= 5) {
+                    $codigo = trim($data[0]);
+                    $nombre = trim($data[1]);
+                    $catId  = trim($data[2]);
+                    $medida = trim($data[3]);
+                    $precio = (float)trim($data[4]);
+
+                    // 1. Buscar el material por código o crearlo si no existe
+                    $material = Material::updateOrCreate(
+                        ['codigo' => $codigo],
+                        [
+                            'nombre' => $nombre,
+                            'fk_id_categoria' => $catId,
+                            'medidas' => $medida
+                        ]
+                    );
+
+                    // 2. Vincular el precio al proveedor (Tabla Abastecimiento)
+                    // CORRECCIÓN: Se quita 'unidad' para evitar SQLSTATE[42S22]
+                    DB::table('abastecimiento')->updateOrInsert(
+                        [
+                            'fk_id_material' => $material->ID_Material,
+                            'fk_id_proveedor' => $request->fk_id_proveedor
+                        ],
+                        [
+                            'precio' => $precio,
+                            'created_at' => $ahora,
+                            'updated_at' => $ahora
+                        ]
+                    );
+                    $contador++;
+                }
+            }
+
+            fclose($handle);
+            DB::commit();
+            return back()->with('success', "Se procesaron $contador materiales exitosamente.");
+            
         } catch (Exception $e) {
-            return back()->withErrors(['error' => 'No se pudo desvincular: ' . $e->getMessage()]);
+            DB::rollBack();
+            if (isset($handle)) fclose($handle);
+            return back()->withErrors(['error' => 'Error en la importación: ' . $e->getMessage()]);
         }
     }
 
+    /**
+     * Creación rápida (AJAX) para el Modal
+     */
     public function guardarRapido(Request $request)
     {
         try {
@@ -160,17 +223,8 @@ class MaterialController extends Controller
                 'mensaje' => 'Material creado correctamente'
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'El código o nombre del material ya existe en el sistema.',
-                'errores' => $e->errors()
-            ], 422);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'mensaje' => $e->getMessage()], 500);
         }
     }
 }
