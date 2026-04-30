@@ -20,7 +20,7 @@ class abastecimiento extends Model
     ];
 
     // Relación: Un abastecimiento pertenece a un material
-    public function material()
+    public function materiales()
     {
         return $this->belongsTo(materiales::class, 'fk_id_material', 'ID_Material'); // Ajusta 'ID_Material' si tu PK se llama diferente
     }

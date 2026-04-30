@@ -123,7 +123,7 @@
                             <label class="block text-sm font-bold text-slate-700 mb-2">Seleccionar Proveedor</label>
                             <select name="fk_id_proveedor" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                 <option value="" disabled selected>Buscar proveedor...</option>
-                                @foreach($proveedores as $prov)
+                                @foreach($proveedor as $prov)
                                     <option value="{{ $prov->ID_proveedor }}">{{ $prov->nombre }}</option>
                                 @endforeach
                             </select>

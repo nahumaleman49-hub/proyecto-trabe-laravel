@@ -22,17 +22,17 @@ class ProveedorController extends Controller
 
     public function crear()
     {
-        // Al crear uno nuevo, no necesitamos relaciones aún
         return view('proveedores.proveedores-agregar');
     }
 
     public function guardar(Request $request)
     {
+        // Evitamos proveedores duplicados por nombre, correo o teléfono
         $request->validate([
-            'nombre' => 'required|string|max:50',
+            'nombre' => 'required|string|max:50|unique:proveedores,nombre',
             'nombre_contacto' => 'required|string|max:50',
-            'telefono' => 'required',
-            'correo_e' => 'required|email',
+            'telefono' => 'required|unique:proveedores,telefono',
+            'correo_e' => 'required|email|unique:proveedores,correo_e',
             'direccion' => 'required|string|max:80',
             'tipo' => 'required|in:Materiales,Servicios,Ambos',
         ]);
@@ -44,10 +44,8 @@ class ProveedorController extends Controller
 
     public function editar($id)
     {
-        // 1. Cargamos el proveedor con sus materiales y servicios ya vinculados
-        $proveedor = Proveedor::with(['abastecimientos.material', 'manoObra.servicio'])->findOrFail($id);
+        $proveedor = Proveedor::with(['abastecimiento.materiales', 'manoObra.servicio'])->findOrFail($id);
         
-        // 2. Cargamos catálogos completos para los selectores
         $materiales = Material::all();
         $categorias = Categoria::all();
         $servicios = Servicio::all();
@@ -57,11 +55,12 @@ class ProveedorController extends Controller
 
     public function actualizar(Request $request, $id)
     {
+        // Al actualizar, pedimos que sea único pero ignorando el registro actual ($id)
         $request->validate([
-            'nombre' => 'required|string|max:50',
+            'nombre' => 'required|string|max:50|unique:proveedores,nombre,'.$id.',ID_proveedor',
             'nombre_contacto' => 'required|string|max:50',
-            'telefono' => 'required',
-            'correo_e' => 'required|email',
+            'telefono' => 'required|unique:proveedores,telefono,'.$id.',ID_proveedor',
+            'correo_e' => 'required|email|unique:proveedores,correo_e,'.$id.',ID_proveedor',
             'direccion' => 'required|string|max:80',
             'tipo' => 'required|in:Materiales,Servicios,Ambos',
         ]);
@@ -73,7 +72,7 @@ class ProveedorController extends Controller
     }
 
     // =========================================================================
-    // FUNCIONES DE VINCULACIÓN: MATERIALES
+    // FUNCIONES DE VINCULACIÓN: MATERIALES (Manejando Duplicados)
     // =========================================================================
 
     public function vincularMaterial(Request $request)
@@ -84,13 +83,14 @@ class ProveedorController extends Controller
             'precio' => 'required|numeric|min:0',
         ]);
 
+        // Buscamos si ya existe la relación para evitar duplicidad de filas
         $existe = Abastecimiento::where('fk_id_proveedor', $request->fk_id_proveedor)
                                 ->where('fk_id_material', $request->fk_id_material)
                                 ->first();
 
         if ($existe) {
             $existe->update(['precio' => $request->precio]);
-            $mensaje = "Precio actualizado para este material.";
+            $mensaje = "El material ya estaba vinculado. Se ha actualizado el precio.";
         } else {
             Abastecimiento::create($request->all());
             $mensaje = "Material vinculado al proveedor correctamente.";
@@ -106,14 +106,14 @@ class ProveedorController extends Controller
                           ->where('fk_id_material', $id_material)
                           ->delete();
 
-            return back()->with('success', 'Material desvinculado de este proveedor correctamente.');
+            return back()->with('success', 'Material desvinculado correctamente.');
         } catch (Exception $e) {
-            return back()->withErrors(['error' => 'No se pudo desvincular el material: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al desvincular: ' . $e->getMessage()]);
         }
     }
 
     // =========================================================================
-    // FUNCIONES DE VINCULACIÓN: SERVICIOS
+    // FUNCIONES DE VINCULACIÓN: SERVICIOS (Manejando Duplicados)
     // =========================================================================
 
     public function vincularServicio(Request $request)
@@ -134,7 +134,7 @@ class ProveedorController extends Controller
                 'precio' => $request->precio,
                 'unidad' => $request->unidad
             ]);
-            $mensaje = "Precio y unidad actualizados para este servicio.";
+            $mensaje = "El servicio ya estaba vinculado. Se han actualizado los datos.";
         } else {
             ManoObra::create($request->all());
             $mensaje = "Servicio vinculado al proveedor correctamente.";
@@ -150,15 +150,11 @@ class ProveedorController extends Controller
                     ->where('fk_id_servicio', $id_servicio)
                     ->delete();
 
-            return back()->with('success', 'Servicio desvinculado de este proveedor correctamente.');
+            return back()->with('success', 'Servicio desvinculado correctamente.');
         } catch (Exception $e) {
-            return back()->withErrors(['error' => 'No se pudo desvincular el servicio: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al desvincular: ' . $e->getMessage()]);
         }
     }
-
-    // =========================================================================
-    // ELIMINACIÓN DE PROVEEDOR
-    // =========================================================================
 
     public function eliminar($id)
     {
@@ -166,14 +162,14 @@ class ProveedorController extends Controller
             DB::beginTransaction();
             $proveedor = Proveedor::findOrFail($id);
             
-            // Borramos sus vínculos en ambas tablas antes de borrar al proveedor
+            // Borrado físico de vínculos para mantener limpia la DB
             Abastecimiento::where('fk_id_proveedor', $id)->delete();
             ManoObra::where('fk_id_proveedor', $id)->delete();
             
             $proveedor->delete();
 
             DB::commit();
-            return redirect()->route('proveedores')->with('success', 'Proveedor y sus vínculos eliminados.');
+            return redirect()->route('proveedores')->with('success', 'Proveedor eliminado.');
         } catch (Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'No se pudo eliminar: ' . $e->getMessage()]);

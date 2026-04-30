@@ -38,7 +38,7 @@ class materiales extends Model
     return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_categoria'); 
 }
 
-    public function abastecimientos()
+    public function abastecimiento()
     {
         return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_Material');
     }
