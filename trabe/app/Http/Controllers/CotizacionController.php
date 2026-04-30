@@ -108,24 +108,49 @@ class CotizacionController extends Controller
     }
 
     public function edit($id)
-{
+    {
     $cotizacion = Cotizacion::with([
         'proyecto.cliente',
-        'detalles.material',
-        'detalles.manoObra.servicio',
+        'detalles.material.categoria',
+        'detalles.manoObra.servicio.categoria',
         'detalles.proveedor'
     ])->findOrFail($id);
 
-    // Calcular valores actuales de gastos y margen (puedes ajustar según tu lógica)
-    // Puedes obtenerlos de la cotización si los guardaste, o usar por defecto
-    $costoEquipo = 0; // Si no lo guardaste, puedes calcularlo o dejarlo en 0
+    // Preparar materiales existentes
+    $materialesExistentes = [];
+    $serviciosExistentes = [];
+    foreach ($cotizacion->detalles as $detalle) {
+        if ($detalle->fk_id_material) {
+            $materialesExistentes[] = [
+                'material_id'    => $detalle->fk_id_material,
+                'proveedor_id'   => $detalle->fk_id_proveedor,
+                'cantidad'       => $detalle->cantidad,
+                'precio_unitario'=> $detalle->precio_unit,
+                'categoria_id'   => $detalle->material->fk_id_categoria ?? null,
+                'categoria_text' => $detalle->material->categoria->nombre ?? '',
+                'material_text'  => $detalle->material->nombre,
+                'proveedor_text' => $detalle->proveedor->nombre,
+                'unidad'         => $detalle->material->medidas,
+            ];
+        } elseif ($detalle->fk_id_mano_obra) {
+            $serviciosExistentes[] = [
+                'servicio_id'    => $detalle->fk_id_mano_obra,
+                'proveedor_id'   => $detalle->fk_id_proveedor,
+                'cantidad'       => $detalle->cantidad,
+                'precio_unitario'=> $detalle->precio_unit,
+                'categoria_id'   => $detalle->manoObra->servicio->fk_id_categoria ?? null,
+                'categoria_text' => $detalle->manoObra->servicio->categoria->nombre ?? '',
+                'servicio_text'  => $detalle->manoObra->servicio->nombre,
+                'proveedor_text' => $detalle->proveedor->nombre,
+                'unidad'         => $detalle->manoObra->unidad,
+            ];
+        }
+    }
+
+    // Valores por defecto (si no guardaste otros)
+    $costoEquipo = 0;
     $gastosPorc = 10;
     $margenPorc = 15;
-
-    // Opcional: si tienes estos campos en la cotización, cárgalos
-    // $costoEquipo = $cotizacion->costo_equipo ?? 0;
-    // $gastosPorc = $cotizacion->gastos_generales ?? 10;
-    // $margenPorc = $cotizacion->margen_ganancia ?? 15;
 
     $clientes = Cliente::all();
     $categoriasMateriales = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
@@ -133,9 +158,10 @@ class CotizacionController extends Controller
 
     return view('cotizaciones.nueva', compact(
         'cotizacion', 'clientes', 'categoriasMateriales', 'categoriasServicios',
-        'costoEquipo', 'gastosPorc', 'margenPorc'
+        'costoEquipo', 'gastosPorc', 'margenPorc',
+        'materialesExistentes', 'serviciosExistentes'
     ));
-}
+    }
 
     public function update(Request $request, $id)
     {

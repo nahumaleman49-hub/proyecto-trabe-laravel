@@ -152,10 +152,6 @@
         }
     });
 
-    // Datos de categorías y proveedores (se llenan desde PHP)
-    const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
-    const categoriasServicios = {!! json_encode($categoriasServicios) !!};
-
     // Variables para índices
     let materialIndex = 0;
     let servicioIndex = 0;
@@ -418,29 +414,13 @@
     document.getElementById('margen_ganancia').addEventListener('input', actualizarTotalesGenerales);
 
     // ---- Precargar datos existentes (modo edición) ----
-    @if(isset($cotizacion))
-        // Materiales precargados
-        @if(isset($cotizacion))
-    const materialesExistentes = {!! json_encode($cotizacion->detalles->whereNotNull('fk_id_material')->map(function($d) {
-        return [
-            'material_id' => $d->fk_id_material,
-            'proveedor_id' => $d->fk_id_proveedor,
-            'cantidad' => $d->cantidad,
-            'categoria_id' => $d->material->fk_id_categoria ?? null,
-        ];
-    })->values()) !!};
-    materialesExistentes.forEach(mat => agregarMaterialConDatos(mat));
-
-    const serviciosExistentes = {!! json_encode($cotizacion->detalles->whereNotNull('fk_id_mano_obra')->map(function($d) {
-        return [
-            'servicio_id' => $d->fk_id_mano_obra,
-            'proveedor_id' => $d->fk_id_proveedor,
-            'cantidad' => $d->cantidad,
-            'categoria_id' => $d->manoObra->servicio->fk_id_categoria ?? null,
-        ];
-    })->values()) !!};
-    serviciosExistentes.forEach(serv => agregarServicioConDatos(serv));
+    @if(isset($materialesExistentes) && count($materialesExistentes))
+        const materialesExistentes = @json($materialesExistentes);
+        materialesExistentes.forEach(mat => agregarMaterialConDatos(mat));
     @endif
+    @if(isset($serviciosExistentes) && count($serviciosExistentes))
+        const serviciosExistentes = @json($serviciosExistentes);
+        serviciosExistentes.forEach(serv => agregarServicioConDatos(serv));
     @endif
     // Disparar el cálculo de totales después de un breve tiempo (para que los subtotales se calculen)
     setTimeout(actualizarTotalesGenerales, 500);
