@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\materiales as Material;
 use App\Models\categoria as Categoria;
-use App\Models\proveedores as Proveedor; 
+use App\Models\proveedores as proveedor; 
 use App\Models\abastecimiento as abastecimiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,9 +67,9 @@ class MaterialController extends Controller
     {
         $material = Material::with('abastecimiento.proveedor')->findOrFail($id);
         $categorias = Categoria::all();
-        $proveedores = Proveedor::whereIn('tipo', ['Materiales', 'Ambos'])->get();
+        $proveedores = proveedores::whereIn('tipo', ['Materiales', 'Ambos'])->get();
         
-        return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedores'));
+        return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedor'));
     }
 
     /**

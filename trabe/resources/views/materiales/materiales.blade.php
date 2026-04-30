@@ -106,9 +106,9 @@
                                 <td class="py-4 px-4 text-slate-600">{{ $material->categoria->nombre ?? 'Sin Categoría' }}</td>
                                 
                                 <td class="py-4 px-4 text-slate-600">
-                                    @if($material->abastecimientos && $material->abastecimientos->count() > 0)
+                                    @if($material->abastecimiento && $material->abastecimiento->count() > 0)
                                         <ul class="space-y-1">
-                                            @foreach($material->abastecimientos as $abasto)
+                                            @foreach($material->abastecimiento as $abasto)
                                                 <li class="text-sm">
                                                     <span class="font-medium text-slate-700">{{ $abasto->proveedor->nombre ?? 'Proveedor desconocido' }}:</span> 
                                                     <span class="text-green-600 font-semibold">${{ number_format($abasto->precio, 2) }}</span>

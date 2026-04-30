@@ -40,7 +40,7 @@ class proveedores extends Model
     }
 
     // Por si no la tenías, la relación con materiales (abastecimiento) es así:
-    public function abastecimientos()
+    public function abastecimiento()
     {
         return $this->hasMany(abastecimiento::class, 'fk_id_proveedor', 'ID_proveedor');
     }

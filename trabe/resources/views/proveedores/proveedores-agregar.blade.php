@@ -185,11 +185,11 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            @forelse($proveedor->abastecimientos as $abastecimiento)
+                            @forelse($proveedor->abastecimiento as $abastecimiento)
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-4 text-slate-500">{{ $abastecimiento->material->codigo }}</td>
-                                <td class="py-3 px-4 font-semibold text-slate-800">{{ $abastecimiento->material->nombre }}</td>
-                                <td class="py-3 px-4 text-slate-600">{{ $abastecimiento->material->medidas }}</td>
+                                <td class="py-3 px-4 text-slate-500">{{ $abastecimiento->materiales->codigo }}</td>
+                                <td class="py-3 px-4 font-semibold text-slate-800">{{ $abastecimiento->materiales->nombre }}</td>
+                                <td class="py-3 px-4 text-slate-600">{{ $abastecimiento->materiales->medidas }}</td>
                                 <td class="py-3 px-4 text-emerald-600 font-bold text-right">${{ number_format($abastecimiento->precio, 2) }}</td>
                                 <td class="py-3 px-4 text-center">
                                     <form action="{{ route('proveedores.desvincularMaterial', [$proveedor->ID_proveedor, $abastecimiento->fk_id_material]) }}" method="POST" class="inline-block">

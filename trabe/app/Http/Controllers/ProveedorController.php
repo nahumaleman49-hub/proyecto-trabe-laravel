@@ -44,7 +44,7 @@ class ProveedorController extends Controller
 
     public function editar($id)
     {
-        $proveedor = Proveedor::with(['abastecimientos.material', 'manoObra.servicio'])->findOrFail($id);
+        $proveedor = Proveedor::with(['abastecimiento.materiales', 'manoObra.servicio'])->findOrFail($id);
         
         $materiales = Material::all();
         $categorias = Categoria::all();
