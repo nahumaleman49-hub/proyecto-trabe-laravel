@@ -177,7 +177,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold">Proveedor</label>
+                        <label class="block text-sm font-semibold">proveedor</label>
                         <select class="proveedor-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
                             <option value="">Primero elija material</option>
                         </select>
@@ -283,7 +283,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold">Proveedor</label>
+                        <label class="block text-sm font-semibold">proveedor</label>
                         <select class="prov-servicio-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
                             <option value="">Primero elija servicio</option>
                         </select>

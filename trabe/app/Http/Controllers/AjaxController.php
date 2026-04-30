@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\clientes as Cliente;
 use App\Models\categoria as Categoria;
-use App\Models\materiales as Material;
-use App\Models\abastecimiento as Abastecimiento;
+use App\Models\materiales as materiales;
+use App\Models\abastecimiento as abastecimiento;
+use App\Models\proveedores as proveedor;
 use App\Models\servicio as Servicio;
 use App\Models\manoobra as ManoObra;
 use Illuminate\Http\Request;
@@ -21,19 +22,19 @@ class AjaxController extends Controller
 
     public function categoriasMateriales()
     {
-        $cats = Categoria::has('materiales')->get(['ID_Categoria as id', 'nombre as text']);
+        $cats = Categoria::has('material')->get(['ID_Categoria as id', 'nombre as text']);
         return response()->json($cats);
     }
 
     public function materialesPorCategoria($id)
     {
-    $materiales = Material::where('fk_id_categoria', $id)->get(['ID_Material as id', 'nombre as text', 'medidas']);
+    $materiales = materiales::where('fk_id_categoria', $id)->get(['ID_Material as id', 'nombre as text', 'medidas']);
     return response()->json($materiales);
     }
 
     public function proveedoresPorMaterial($id)
     {
-        $proveedores = Abastecimiento::with('proveedor')
+        $proveedor = abastecimiento::with('proveedor')
             ->where('fk_id_material', $id)
             ->get()
             ->map(function ($ab) {
@@ -41,10 +42,10 @@ class AjaxController extends Controller
                     'id' => $ab->proveedor->ID_proveedor,
                     'text' => $ab->proveedor->nombre,
                     'precio' => $ab->precio,
-                    'unidad' => $ab->material->medidas,
+                    'unidad' => $ab->materiales->medidas,
                 ];
             });
-        return response()->json($proveedores);
+        return response()->json($proveedor);
     }
 
     // Para servicios
@@ -62,7 +63,7 @@ class AjaxController extends Controller
 
     public function proveedoresPorServicio($id)
     {
-        $proveedores = ManoObra::with('proveedor')
+        $proveedor = manoobra::with('proveedor')
             ->where('fk_id_servicio', $id)
             ->get()
             ->map(function ($mo) {
@@ -73,6 +74,6 @@ class AjaxController extends Controller
                     'unidad' => $mo->unidad,
                 ];
             });
-        return response()->json($proveedores);
+        return response()->json($proveedor);
     }
 }

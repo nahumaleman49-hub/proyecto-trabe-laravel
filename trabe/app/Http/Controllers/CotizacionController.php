@@ -6,6 +6,8 @@ use App\Models\clientes as Cliente;
 use App\Models\proyecto as Proyecto;
 use App\Models\cotizacion as Cotizacion;
 use App\Models\detallecotizacion as DetalleCotizacion;
+use App\Models\proveedores as proveedor;
+
 use App\Models\categoria as Categoria;
 use Illuminate\Http\Request;
 
