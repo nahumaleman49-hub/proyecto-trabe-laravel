@@ -110,42 +110,47 @@ class CotizacionController extends Controller
     public function edit($id)
     {
     $cotizacion = Cotizacion::with([
-        'proyecto.cliente',
-        'detalles.material.categoria',
-        'detalles.manoObra.servicio.categoria',
-        'detalles.proveedor'
-    ])->findOrFail($id);
+    'proyecto.cliente',
+    'detalles.material.categoria',       // material → categoria
+    'detalles.manoObra.servicio.categoria', // manoObra → servicio → categoria
+    'detalles.proveedor'
+])->findOrFail($id);
 
     // Preparar materiales existentes
-    $materialesExistentes = [];
-    $serviciosExistentes = [];
-    foreach ($cotizacion->detalles as $detalle) {
-        if ($detalle->fk_id_material) {
-            $materialesExistentes[] = [
-                'material_id'    => $detalle->fk_id_material,
-                'proveedor_id'   => $detalle->fk_id_proveedor,
-                'cantidad'       => $detalle->cantidad,
-                'precio_unitario'=> $detalle->precio_unit,
-                'categoria_id'   => $detalle->material->fk_id_categoria ?? null,
-                'categoria_text' => $detalle->material->categoria->nombre ?? '',
-                'material_text'  => $detalle->material->nombre,
-                'proveedor_text' => $detalle->proveedor->nombre,
-                'unidad'         => $detalle->material->medidas,
-            ];
-        } elseif ($detalle->fk_id_mano_obra) {
-            $serviciosExistentes[] = [
-                'servicio_id'    => $detalle->fk_id_mano_obra,
-                'proveedor_id'   => $detalle->fk_id_proveedor,
-                'cantidad'       => $detalle->cantidad,
-                'precio_unitario'=> $detalle->precio_unit,
-                'categoria_id'   => $detalle->manoObra->servicio->fk_id_categoria ?? null,
-                'categoria_text' => $detalle->manoObra->servicio->categoria->nombre ?? '',
-                'servicio_text'  => $detalle->manoObra->servicio->nombre,
-                'proveedor_text' => $detalle->proveedor->nombre,
-                'unidad'         => $detalle->manoObra->unidad,
-            ];
-        }
+    // Preparar materiales y servicios existentes con validación de nulos
+$materialesExistentes = [];
+$serviciosExistentes = [];
+
+foreach ($cotizacion->detalles as $detalle) {
+    if ($detalle->fk_id_material) {
+        $material = $detalle->material; // Relación material
+        $materialesExistentes[] = [
+            'material_id'    => $detalle->fk_id_material,
+            'proveedor_id'   => $detalle->fk_id_proveedor,
+            'cantidad'       => $detalle->cantidad,
+            'precio_unitario'=> $detalle->precio_unit,
+            'categoria_id'   => $material ? $material->fk_id_categoria : null,
+            'categoria_text' => $material && $material->categoria ? $material->categoria->nombre : '',
+            'material_text'  => $material ? $material->nombre : '',
+            'proveedor_text' => $detalle->proveedor ? $detalle->proveedor->nombre : '',
+            'unidad'         => $material ? $material->medidas : '',
+        ];
+    } elseif ($detalle->fk_id_mano_obra) {
+        $manoObra = $detalle->manoObra; // Relación manoObra
+        $servicio = $manoObra ? $manoObra->servicio : null;
+        $serviciosExistentes[] = [
+            'servicio_id'    => $detalle->fk_id_mano_obra,
+            'proveedor_id'   => $detalle->fk_id_proveedor,
+            'cantidad'       => $detalle->cantidad,
+            'precio_unitario'=> $detalle->precio_unit,
+            'categoria_id'   => $servicio ? $servicio->fk_id_categoria : null,
+            'categoria_text' => $servicio && $servicio->categoria ? $servicio->categoria->nombre : '',
+            'servicio_text'  => $servicio ? $servicio->nombre : '',
+            'proveedor_text' => $detalle->proveedor ? $detalle->proveedor->nombre : '',
+            'unidad'         => $manoObra ? $manoObra->unidad : '',
+        ];
     }
+}
 
     // Valores por defecto (si no guardaste otros)
     $costoEquipo = 0;
