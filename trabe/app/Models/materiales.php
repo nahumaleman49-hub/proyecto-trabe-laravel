@@ -34,14 +34,14 @@ class materiales extends Model
     
     public function categoria()
 {
-
-    return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_categoria'); 
+    return $this->belongsTo(Categoria::class, 'fk_id_categoria', 'ID_Categoria');
 }
 
-    public function abastecimiento()
-    {
-        return $this->hasMany(abastecimiento::class, 'fk_id_material', 'ID_Material');
-    }
+// Opcional, pero útil para las pruebas
+public function abastecimientos()
+{
+    return $this->hasMany(Abastecimiento::class, 'fk_id_material', 'ID_Material');
+}
 
     public $timestamps = false;
 }

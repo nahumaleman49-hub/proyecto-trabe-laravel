@@ -20,15 +20,13 @@ class manoobra extends Model
         'precio'
     ];
 
-    // Relación con Proveedor
     public function proveedor()
-    {
-        return $this->belongsTo(proveedores::class, 'fk_id_proveedor', 'ID_proveedor');
-    }
+{
+    return $this->belongsTo(proveedores::class, 'fk_id_proveedor', 'ID_proveedor');
+}
 
-    // Relación: Esta mano de obra pertenece a un servicio
-    public function servicio()
-    {
-        return $this->belongsTo(servicio::class, 'fk_id_servicio', 'ID_servicio');
-    }
+public function servicio()
+{
+    return $this->belongsTo(Servicio::class, 'fk_id_servicio', 'ID_servicio');
+}
 }

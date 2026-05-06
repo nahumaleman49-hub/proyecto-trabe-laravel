@@ -18,15 +18,13 @@ class servicio extends Model
         'nombre'
     ];
 
-    // Relación: Un servicio pertenece a una categoría
     public function categoria()
-    {
-        return $this->belongsTo(categoria::class, 'fk_id_categoria', 'ID_Categoria');
-    }
+{
+    return $this->belongsTo(Categoria::class, 'fk_id_categoria', 'ID_Categoria');
+}
 
-    // Relación: Un servicio puede tener muchas manos de obra (cotizaciones de distintos proveedores)
-    public function manoObra()
-    {
-        return $this->hasMany(manoobra::class, 'fk_id_servicio', 'ID_servicio');
-    }
+public function manoObras()
+{
+    return $this->hasMany(ManoObra::class, 'fk_id_servicio', 'ID_servicio');
+}
 }

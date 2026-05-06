@@ -27,16 +27,15 @@ class categoria extends Model
         "descripcion"
     ];
     
-    public $timestamps = false;
-
+    
     public function materiales()
-    {
-        return $this->hasMany(Material::class, 'fk_id_categoria', 'ID_Categoria');
-    }
+{
+    return $this->hasMany(Material::class, 'fk_id_categoria', 'ID_Categoria');
+}
 
-    // Relación con Servicios
-    public function servicios()
-    {
-        return $this->hasMany(Servicio::class, 'fk_id_categoria', 'ID_Categoria');
+public function servicios()
+{
+    return $this->hasMany(Servicio::class, 'fk_id_categoria', 'ID_Categoria');
     }
+    public $timestamps = false;
 }
