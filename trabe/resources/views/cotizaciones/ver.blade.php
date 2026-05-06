@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotización #{{ $cotizacion->ID_cotizacion }}</title>
+    <title>QOSTO - Cotización #{{ $cotizacion->ID_cotizacion }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50">
 
 <div class="min-h-screen pb-12">
+    {{-- Cabecera con gradiente reducido --}}
     <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
         <div class="absolute inset-0 flex items-center justify-center">
             <div class="text-center text-white">
@@ -21,87 +22,104 @@
     </div>
 
     <div class="container mx-auto px-4 py-8 max-w-5xl">
+        {{-- Botón Volver --}}
         <a href="{{ route('cotizaciones') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-6">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
             Volver a Cotizaciones
         </a>
 
         @php
-            $estados = ['Borrador', 'Enviada', 'Aprobada', 'Rechazada'];
+            $estados = [0 => 'Borrador', 1 => 'Enviada', 2 => 'Aprobada', 3 => 'Rechazada'];
             $badgeColor = match($cotizacion->estado) {
-                0 => 'bg-slate-100 text-slate-700',
-                1 => 'bg-blue-100 text-blue-700',
-                2 => 'bg-green-100 text-green-700',
-                3 => 'bg-red-100 text-red-700',
-                default => 'bg-gray-100'
+                0 => 'bg-slate-100 text-slate-700 border-slate-200',
+                1 => 'bg-blue-100 text-blue-700 border-blue-200',
+                2 => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                3 => 'bg-red-100 text-red-700 border-red-200',
+                default => 'bg-gray-100 border-gray-200'
             };
+            
+            // Cálculos
+            $materiales = $cotizacion->detalles->whereNotNull('fk_id_material');
+            $servicios = $cotizacion->detalles->whereNotNull('fk_id_mano_obra');
+            
+            $subtotalMateriales = $materiales->sum(fn($d) => $d->cantidad * $d->precio_unit);
+            $subtotalServicios = $servicios->sum(fn($d) => $d->cantidad * $d->precio_unit);
+            $subtotalGeneral = $subtotalMateriales + $subtotalServicios;
         @endphp
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-            {{-- Cabecera con estado y fecha --}}
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+            {{-- Barra de Estado Superior --}}
             <div class="bg-slate-50 px-8 py-4 border-b flex justify-between items-center flex-wrap gap-2">
-                <div>
-                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $badgeColor }}">
-                        {{ $estados[$cotizacion->estado] }}
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $badgeColor }}">
+                        {{ $estados[$cotizacion->estado] ?? 'Desconocido' }}
                     </span>
-                    <span class="ml-3 text-slate-500 text-sm">Creada: {{ $cotizacion->fecha->format('d/m/Y') }}</span>
+                    <span class="text-slate-500 text-sm flex items-center gap-1">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        {{ \Carbon\Carbon::parse($cotizacion->fecha)->format('d/m/Y') }}
+                    </span>
                 </div>
-                <div class="text-slate-700 font-mono text-sm">ID Cotización: {{ $cotizacion->ID_cotizacion }}</div>
+                <div class="text-slate-400 font-mono text-sm tracking-widest uppercase">Folio: {{ str_pad($cotizacion->ID_cotizacion, 5, '0', STR_PAD_LEFT) }}</div>
             </div>
 
-            {{-- Información del proyecto y cliente --}}
-            <div class="p-8 border-b">
-                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i data-lucide="info" class="w-5 h-5"></i> Datos del Proyecto
+            {{-- Información del Proyecto --}}
+            <div class="p-8 border-b bg-white">
+                <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-l-4 border-slate-700 pl-3">
+                    Información General
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <p class="text-sm text-slate-500">Nombre del Proyecto</p>
-                        <p class="font-semibold">{{ $cotizacion->proyecto->nombre ?? 'No especificado' }}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Proyecto</p>
+                            <p class="text-lg font-semibold text-slate-800">{{ $cotizacion->proyecto->nombre ?? 'Sin nombre' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Ubicación / Fechas</p>
+                            <p class="text-slate-600">
+                                {{ $cotizacion->proyecto->fecha_ini ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_ini)->format('d/m/Y') : 'N/A' }} 
+                                al 
+                                {{ $cotizacion->proyecto->fecha_fin ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_fin)->format('d/m/Y') : 'N/A' }}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Cliente</p>
-                        <p class="font-semibold">{{ $cotizacion->proyecto->cliente->nombre ?? 'No especificado' }}</p>
-                        <p class="text-sm text-slate-600">{{ $cotizacion->proyecto->cliente->telefono ?? '' }} {{ $cotizacion->proyecto->cliente->correo_e ?? '' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Fechas del Proyecto</p>
-                        <p>Inicio: {{ $cotizacion->proyecto->fecha_ini ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_ini)->format('d/m/Y') : 'N/A' }}</p>
-                        <p>Fin: {{ $cotizacion->proyecto->fecha_fin ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_fin)->format('d/m/Y') : 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Presupuesto inicial del proyecto</p>
-                        <p class="font-medium">${{ number_format($cotizacion->proyecto->presupuesto, 2) }}</p>
+                    <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Cliente</p>
+                            <p class="text-lg font-semibold text-slate-800">{{ $cotizacion->proyecto->cliente->nombre ?? 'N/A' }}</p>
+                        </div>
+                        <div class="flex flex-col text-sm text-slate-600">
+                            <span class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->telefono ?? 'S/T' }}</span>
+                            <span class="flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->correo_e ?? 'S/C' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Materiales --}}
-            @php $materiales = $cotizacion->detalles->whereNotNull('fk_id_material'); @endphp
+            {{-- Tabla de Materiales --}}
             @if($materiales->count())
             <div class="p-8 border-b">
-                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i data-lucide="package" class="w-5 h-5"></i> Materiales
-                </h2>
-                <div class="overflow-x-auto">
+                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <i data-lucide="package" class="w-5 h-5 text-blue-500"></i> Desglose de Materiales
+                </h3>
+                <div class="overflow-x-auto rounded-lg border border-slate-100">
                     <table class="w-full text-sm">
-                        <thead class="bg-slate-100">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                             <tr>
-                                <th class="text-left py-2 px-3">Material</th>
-                                <th class="text-left py-2 px-3">Proveedor</th>
-                                <th class="text-right py-2 px-3">Cantidad</th>
-                                <th class="text-right py-2 px-3">Precio unitario</th>
-                                <th class="text-right py-2 px-3">Importe</th>
+                                <th class="text-left py-3 px-4">Descripción</th>
+                                <th class="text-left py-3 px-4">Proveedor</th>
+                                <th class="text-center py-3 px-4">Cant.</th>
+                                <th class="text-right py-3 px-4">P. Unitario</th>
+                                <th class="text-right py-3 px-4">Subtotal</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-slate-100">
                             @foreach($materiales as $det)
-                            <tr class="border-b">
-                                <td class="py-2 px-3">{{ $det->material->nombre ?? 'N/A' }} ({{ $det->material->medidas ?? '' }})</td>
-                                <td class="py-2 px-3">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
-                                <td class="py-2 px-3 text-right">{{ number_format($det->cantidad, 2) }}</td>
-                                <td class="py-2 px-3 text-right">${{ number_format($det->precio_unit, 2) }}</td>
-                                <td class="py-2 px-3 text-right font-semibold">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-3 px-4 font-medium">{{ $det->material->nombre ?? 'Material' }} <span class="text-slate-400 font-normal">({{ $det->material->medidas ?? '' }})</span></td>
+                                <td class="py-3 px-4 text-slate-500 text-xs">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
+                                <td class="py-3 px-4 text-center">{{ number_format($det->cantidad, 2) }}</td>
+                                <td class="py-3 px-4 text-right text-slate-500">${{ number_format($det->precio_unit, 2) }}</td>
+                                <td class="py-3 px-4 text-right font-bold text-slate-700">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -110,107 +128,81 @@
             </div>
             @endif
 
-            {{-- Servicios (Mano de obra) --}}
-            @php $servicios = $cotizacion->detalles->whereNotNull('fk_id_mano_obra'); @endphp
+            {{-- Tabla de Servicios --}}
             @if($servicios->count())
             <div class="p-8 border-b">
-                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i data-lucide="briefcase" class="w-5 h-5"></i> Servicios (Mano de obra)
-                </h2>
-                <div class="overflow-x-auto">
+                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <i data-lucide="briefcase" class="w-5 h-5 text-amber-500"></i> Mano de Obra y Servicios
+                </h3>
+                <div class="overflow-x-auto rounded-lg border border-slate-100">
                     <table class="w-full text-sm">
-                        <thead class="bg-slate-100">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                             <tr>
-                                <th class="text-left py-2 px-3">Servicio</th>
-                                <th class="text-left py-2 px-3">Proveedor</th>
-                                <th class="text-right py-2 px-3">Cantidad</th>
-                                <th class="text-right py-2 px-3">Precio unitario</th>
-                                <th class="text-right py-2 px-3">Importe</th>
+                                <th class="text-left py-3 px-4">Servicio / Unidad</th>
+                                <th class="text-left py-3 px-4">Proveedor</th>
+                                <th class="text-center py-3 px-4">Cant.</th>
+                                <th class="text-right py-3 px-4">P. Unitario</th>
+                                <th class="text-right py-3 px-4">Subtotal</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-slate-100">
                             @foreach($servicios as $det)
-                            @php
-                                $servicioNombre = $det->manoObra->servicio->nombre ?? 'Servicio';
-                                $unidad = $det->manoObra->unidad ?? '';
-                            @endphp
-                            <tr class="border-b">
-                                <td class="py-2 px-3">{{ $servicioNombre }} <span class="text-xs text-slate-500">({{ $unidad }})</span></td>
-                                <td class="py-2 px-3">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
-                                <td class="py-2 px-3 text-right">{{ number_format($det->cantidad, 2) }}</td>
-                                <td class="py-2 px-3 text-right">${{ number_format($det->precio_unit, 2) }}</td>
-                                <td class="py-2 px-3 text-right font-semibold">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
-                             </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-3 px-4 font-medium">
+                                    {{ $det->manoObra->servicio->nombre ?? 'Servicio' }}
+                                    <span class="block text-[10px] text-slate-400 uppercase tracking-tighter">{{ $det->manoObra->unidad ?? 'Unidad' }}</span>
+                                </td>
+                                <td class="py-3 px-4 text-slate-500 text-xs">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
+                                <td class="py-3 px-4 text-center">{{ number_format($det->cantidad, 2) }}</td>
+                                <td class="py-3 px-4 text-right text-slate-500">${{ number_format($det->precio_unit, 2) }}</td>
+                                <td class="py-3 px-4 text-right font-bold text-slate-700">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
+                            </tr>
                             @endforeach
                         </tbody>
-                     </table>
+                    </table>
                 </div>
             </div>
             @endif
 
-            {{-- Resumen de costos --}}
-            @php
-                $subtotalMateriales = $materiales->sum(fn($d) => $d->cantidad * $d->precio_unit);
-                $subtotalServicios = $servicios->sum(fn($d) => $d->cantidad * $d->precio_unit);
-                $subtotalGeneral = $subtotalMateriales + $subtotalServicios;
-                $costoEquipo = 0; // Si no se guardó en la cotización, se puede omitir o tomar de otro lado
-                // Podrías agregar estos campos extra a la tabla cotizacion si los necesitas, por simplicidad asumimos 0
-                $gastosGenerales = 0;
-                $margenGanancia = 0;
-                $total = $cotizacion->total;
-            @endphp
-            <div class="p-8 bg-slate-50">
-                <h2 class="text-xl font-bold text-slate-800 mb-4">Resumen Económico</h2>
-                <div class="max-w-md ml-auto space-y-2 text-right">
-                    <div class="flex justify-between">
-                        <span>Subtotal Materiales:</span>
-                        <span class="font-medium">${{ number_format($subtotalMateriales, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Subtotal Servicios:</span>
-                        <span class="font-medium">${{ number_format($subtotalServicios, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between pt-2 border-t">
-                        <span class="font-semibold">Subtotal General:</span>
-                        <span class="font-bold">${{ number_format($subtotalGeneral, 2) }}</span>
-                    </div>
-                    @if($costoEquipo > 0)
+            {{-- Resumen Económico Final --}}
+            <div class="p-8 bg-slate-900 text-slate-300">
+                <div class="max-w-xs ml-auto space-y-3">
                     <div class="flex justify-between text-sm">
-                        <span>Costo de Equipo:</span>
-                        <span>${{ number_format($costoEquipo, 2) }}</span>
+                        <span>Total Materiales:</span>
+                        <span class="text-white">${{ number_format($subtotalMateriales, 2) }}</span>
                     </div>
-                    @endif
-                    @if($gastosGenerales > 0)
                     <div class="flex justify-between text-sm">
-                        <span>Gastos Generales:</span>
-                        <span>${{ number_format($gastosGenerales, 2) }}</span>
+                        <span>Total Mano de Obra:</span>
+                        <span class="text-white">${{ number_format($subtotalServicios, 2) }}</span>
                     </div>
-                    @endif
-                    @if($margenGanancia > 0)
-                    <div class="flex justify-between text-sm">
-                        <span>Margen de Ganancia:</span>
-                        <span>${{ number_format($margenGanancia, 2) }}</span>
-                    </div>
-                    @endif
-                    <div class="flex justify-between text-lg font-bold pt-2 border-t">
-                        <span>Total Cotización:</span>
-                        <span class="text-emerald-700">${{ number_format($total, 2) }}</span>
+                    <div class="pt-4 border-t border-slate-700 flex justify-between items-end">
+                        <span class="text-lg font-bold text-white">TOTAL FINAL</span>
+                        <span class="text-3xl font-black text-emerald-400">${{ number_format($cotizacion->total, 2) }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-8 flex justify-end gap-3">
-                <form action="{{ route('cotizaciones.editar', $cotizacion->ID_cotizacion) }}" method="PUT">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Editar</button>
-                </form>
-            <a href="{{ route('cotizaciones.pdf', $cotizacion->ID_cotizacion) }}" target="_blank" class="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800">Generar PDF</a>
+        {{-- Acciones Finales --}}
+        <div class="mt-8 flex justify-end gap-4">
+            <a href="{{ route('cotizaciones.editar', $cotizacion->ID_cotizacion) }}" 
+               class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl hover:bg-slate-50 transition-all font-semibold shadow-sm">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                Editar Cotización
+            </a>
+            <a href="{{ route('cotizaciones.pdf', $cotizacion->ID_cotizacion) }}" target="_blank" 
+               class="inline-flex items-center gap-2 bg-slate-800 text-white px-6 py-2.5 rounded-xl hover:bg-slate-900 transition-all font-semibold shadow-md">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                Generar PDF
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-    lucide.createIcons();
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+    });
 </script>
 </body>
 </html>

@@ -34,7 +34,7 @@
                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Crear Nueva Cotización</h2>
                     <p class="text-slate-600 text-lg">Genera una cotización detallada para tu próximo proyecto de construcción</p>
                 </div>
-                    <a href="{{ route('cotizaciones.nueva') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
+                <a href="{{ route('cotizaciones.nueva') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                     Nueva Cotización
                 </a>
@@ -48,42 +48,62 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-slate-200">
-                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">ID Cotización</th>
-                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Nombre del Proyecto</th>
+                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">ID</th>
+                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Proyecto</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Cliente</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Fecha</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Valor</th>
                             <th class="text-left py-4 px-4 text-slate-700 font-semibold">Estado</th>
-                            <th class="text-left py-4 px-4 text-slate-700 font-semibold">Acciones</th>
+                            <th class="text-left py-4 px-4 text-slate-700 font-semibold text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @forelse($cotizaciones as $cot)
-                            <tr>
-                                <td class="py-4 px-4">{{ $cot->ID_cotizacion }}</td>
-                                <td class="py-4 px-4">{{ $cot->proyecto->nombre ?? 'N/A' }}</td>
-                                <td class="py-4 px-4">{{ $cot->proyecto->cliente->nombre ?? 'N/A' }}</td>
-                                <td class="py-4 px-4">{{ $cot->fecha->format('d/m/Y') }}</td>
-                                <td class="py-4 px-4">${{ number_format($cot->total, 2) }}</td>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-4 px-4 font-medium text-slate-900">#{{ $cot->ID_cotizacion }}</td>
+                                <td class="py-4 px-4 text-slate-600">{{ $cot->proyecto->nombre ?? 'Sin Proyecto' }}</td>
+                                <td class="py-4 px-4 text-slate-600">{{ $cot->proyecto->cliente->nombre ?? 'N/A' }}</td>
+                                <td class="py-4 px-4 text-slate-600">{{ \Carbon\Carbon::parse($cot->fecha)->format('d/m/Y') }}</td>
+                                <td class="py-4 px-4 font-bold text-slate-800">${{ number_format($cot->total, 2) }}</td>
                                 <td class="py-4 px-4">
                                     @php
-                                        $estados = ['Borrador', 'Enviada', 'Aprobada', 'Rechazada'];
-                                        $clase = match($cot->estado) {
-                                            0 => 'bg-slate-100 text-slate-700',
-                                            1 => 'bg-blue-100 text-blue-700',
-                                            2 => 'bg-green-100 text-green-700',
-                                            3 => 'bg-red-100 text-red-700',
-                                            default => 'bg-slate-100'
-                                        };
+                                        $estados = [0 => 'Borrador', 1 => 'Enviada', 2 => 'Aprobada', 3 => 'Rechazada'];
+                                        $clases = [
+                                            0 => 'bg-slate-100 text-slate-600 border-slate-200',
+                                            1 => 'bg-blue-50 text-blue-700 border-blue-200',
+                                            2 => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                            3 => 'bg-red-50 text-red-700 border-red-200'
+                                        ];
+                                        $estadoLabel = $estados[$cot->estado] ?? 'Desconocido';
+                                        $claseEstado = $clases[$cot->estado] ?? 'bg-gray-100';
                                     @endphp
-                                    <span class="px-3 py-1 rounded-full text-sm {{ $clase }}">{{ $estados[$cot->estado] }}</span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold border {{ $claseEstado }}">
+                                        {{ $estadoLabel }}
+                                    </span>
                                 </td>
                                 <td class="py-4 px-4">
-                                    <a href="{{ route('cotizaciones.ver', $cot->ID_cotizacion) }}" class="text-slate-600 hover:text-slate-800">Ver</a>
+                                    <div class="flex items-center justify-center gap-3">
+                                        <a href="{{ route('cotizaciones.ver', $cot->ID_cotizacion) }}" class="p-2 text-slate-400 hover:text-slate-800 title="Ver Detalle">
+                                            <i data-lucide="eye" class="w-5 h-5"></i>
+                                        </a>
+                                        <a href="{{ route('cotizaciones.editar', $cot->ID_cotizacion) }}" class="p-2 text-slate-400 hover:text-blue-600" title="Editar">
+                                            <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                        </a>
+                                        <a href="{{ route('cotizaciones.pdf', $cot->ID_cotizacion) }}" class="p-2 text-slate-400 hover:text-red-600" title="Descargar PDF">
+                                            <i data-lucide="file-down" class="w-5 h-5"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8">No hay cotizaciones</td></tr>
+                            <tr>
+                                <td colspan="7" class="text-center py-12">
+                                    <div class="flex flex-col items-center text-slate-400">
+                                        <i data-lucide="inbox" class="w-12 h-12 mb-2"></i>
+                                        <p class="text-lg">No se encontraron cotizaciones registradas</p>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>

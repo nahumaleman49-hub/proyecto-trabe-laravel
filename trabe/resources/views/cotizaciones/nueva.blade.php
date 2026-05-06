@@ -95,15 +95,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block font-semibold mb-2">Costo de Equipo ($)</label>
-                    <input type="number" name="costo_equipo" id="costo_equipo" value="{{ old('costo_equipo', $costoEquipo ?? 0) }}" step="0.01" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="costo_equipo" id="costo_equipo" value="{{ old('costo_equipo', $cotizacion->costo_equipo ?? 0) }}" step="0.01" class="w-full border rounded-lg px-4 py-2">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Gastos Generales (%)</label>
-                    <input type="number" name="gastos_generales" id="gastos_generales" value="{{ old('gastos_generales', $gastosPorc ?? 10) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="gastos_generales" id="gastos_generales" value="{{ old('gastos_generales', $cotizacion->gastos_generales ?? 10) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Margen de Ganancia (%)</label>
-                    <input type="number" name="margen_ganancia" id="margen_ganancia" value="{{ old('margen_ganancia', $margenPorc ?? 15) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
+                    <input type="number" name="margen_ganancia" id="margen_ganancia" value="{{ old('margen_ganancia', $cotizacion->margen_ganancia ?? 15) }}" step="0.1" class="w-full border rounded-lg px-4 py-2">
                 </div>
             </div>
         </div>
@@ -131,7 +131,6 @@
 <script>
     lucide.createIcons();
 
-    // ---- Cliente autocomplete (selección) ----
     const clienteSelect = document.getElementById('cliente_id');
     const telefonoInput = document.getElementById('telefono');
     const correoInput = document.getElementById('correo');
@@ -152,7 +151,6 @@
         }
     });
 
-    // Variables para índices
     let materialIndex = 0;
     let servicioIndex = 0;
 
@@ -165,20 +163,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-semibold">Categoría</label>
-                        <select class="categoria-material w-full border px-3 py-2 rounded" data-target="${rowId}">
+                        <select class="categoria-material w-full border px-3 py-2 rounded">
                             <option value="">Seleccione</option>
                             ${categoriasMateriales.map(c => `<option value="${c.id}">${c.text}</option>`).join('')}
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">Material</label>
-                        <select class="material-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                        <select class="material-select w-full border px-3 py-2 rounded" disabled>
                             <option value="">Primero elija categoría</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">proveedor</label>
-                        <select class="proveedor-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                        <select class="proveedor-select w-full border px-3 py-2 rounded" disabled>
                             <option value="">Primero elija material</option>
                         </select>
                     </div>
@@ -207,7 +205,7 @@
             matSelect.disabled = true;
             matSelect.innerHTML = '<option value="">Cargando...</option>';
             provSelect.disabled = true;
-            provSelect.innerHTML = '<option value="">Primero elija material</option>';
+            provSelect.innerHTML = '<option value="">Elija material</option>';
             if (!catId) return;
             const res = await fetch(`/ajax/materiales-por-categoria/${catId}`);
             const mats = await res.json();
@@ -216,6 +214,7 @@
             mats.forEach(m => {
                 matSelect.innerHTML += `<option value="${m.id}" data-medidas="${m.medidas}">${m.text}</option>`;
             });
+            if(datos && datos.material_id) matSelect.value = datos.material_id;
         });
 
         matSelect.addEventListener('change', async (e) => {
@@ -228,8 +227,14 @@
             provSelect.disabled = false;
             provSelect.innerHTML = '<option value="">Seleccione proveedor</option>';
             provs.forEach(p => {
-                provSelect.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-unidad="${p.unidad}">${p.text} - $${p.precio} / ${p.unidad}</option>`;
+                // AQUÍ USAMOS ID_PROD como valor del option
+                provSelect.innerHTML += `<option value="${p.id_prod}" data-precio="${p.precio}" data-proveedor-id="${p.id}">${p.text} - $${p.precio}</option>`;
             });
+            if(datos && datos.proveedor_id) {
+                // Buscar el option que tenga el proveedor_id original para asignar el ID_prod correcto
+                const targetOption = Array.from(provSelect.options).find(opt => opt.dataset.proveedorId == datos.proveedor_id);
+                if(targetOption) provSelect.value = targetOption.value;
+            }
         });
 
         function calcularSubtotal() {
@@ -244,21 +249,15 @@
         cantidadInput.addEventListener('input', calcularSubtotal);
         provSelect.addEventListener('change', calcularSubtotal);
 
-        // Si hay datos precargados, asignarlos
         if (datos) {
+            catSelect.value = datos.categoria_id || '';
+            catSelect.dispatchEvent(new Event('change'));
             setTimeout(() => {
-                catSelect.value = datos.categoria_id;
-                catSelect.dispatchEvent(new Event('change'));
+                matSelect.dispatchEvent(new Event('change'));
                 setTimeout(() => {
-                    matSelect.value = datos.material_id;
-                    matSelect.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        provSelect.value = datos.proveedor_id;
-                        provSelect.dispatchEvent(new Event('change'));
-                        cantidadInput.dispatchEvent(new Event('input'));
-                    }, 300);
-                }, 300);
-            }, 100);
+                    provSelect.dispatchEvent(new Event('change'));
+                }, 400);
+            }, 400);
         }
     }
 
@@ -270,26 +269,26 @@
                 <button type="button" class="absolute top-2 right-2 text-red-500 eliminar-servicio"><i data-lucide="x" class="w-4 h-4"></i></button>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold">Categoría de servicio</label>
-                        <select class="cat-servicio w-full border px-3 py-2 rounded" data-target="${rowId}">
+                        <label class="block text-sm font-semibold">Categoría</label>
+                        <select class="cat-servicio w-full border px-3 py-2 rounded">
                             <option value="">Seleccione</option>
                             ${categoriasServicios.map(c => `<option value="${c.id}">${c.text}</option>`).join('')}
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">Servicio</label>
-                        <select class="servicio-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                        <select class="servicio-select w-full border px-3 py-2 rounded" disabled>
                             <option value="">Primero elija categoría</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold">proveedor</label>
-                        <select class="prov-servicio-select w-full border px-3 py-2 rounded" data-target="${rowId}" disabled>
+                        <select class="prov-servicio-select w-full border px-3 py-2 rounded" disabled>
                             <option value="">Primero elija servicio</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold">Cantidad (unidades)</label>
+                        <label class="block text-sm font-semibold">Cantidad</label>
                         <input type="number" class="cantidad-servicio w-full border px-3 py-2 rounded" step="0.01" min="0" value="${datos ? datos.cantidad : 1}">
                     </div>
                 </div>
@@ -312,8 +311,6 @@
             const catId = e.target.value;
             servSelect.disabled = true;
             servSelect.innerHTML = '<option value="">Cargando...</option>';
-            provSelect.disabled = true;
-            provSelect.innerHTML = '<option value="">Primero elija servicio</option>';
             if (!catId) return;
             const res = await fetch(`/ajax/servicios-por-categoria/${catId}`);
             const servs = await res.json();
@@ -322,6 +319,7 @@
             servs.forEach(s => {
                 servSelect.innerHTML += `<option value="${s.id}">${s.text}</option>`;
             });
+            if(datos && datos.servicio_id) servSelect.value = datos.servicio_id;
         });
 
         servSelect.addEventListener('change', async (e) => {
@@ -334,8 +332,9 @@
             provSelect.disabled = false;
             provSelect.innerHTML = '<option value="">Seleccione proveedor</option>';
             provs.forEach(p => {
-                provSelect.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-unidad="${p.unidad}">${p.text} - $${p.precio} / ${p.unidad}</option>`;
+                provSelect.innerHTML += `<option value="${p.id}" data-precio="${p.precio}">${p.text}</option>`;
             });
+            if(datos && datos.mano_obra_id) provSelect.value = datos.mano_obra_id;
         });
 
         function calcularSubtotal() {
@@ -351,23 +350,17 @@
         provSelect.addEventListener('change', calcularSubtotal);
 
         if (datos) {
+            catSelect.value = datos.categoria_id || '';
+            catSelect.dispatchEvent(new Event('change'));
             setTimeout(() => {
-                catSelect.value = datos.categoria_id;
-                catSelect.dispatchEvent(new Event('change'));
+                servSelect.dispatchEvent(new Event('change'));
                 setTimeout(() => {
-                    servSelect.value = datos.servicio_id;
-                    servSelect.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        provSelect.value = datos.proveedor_id;
-                        provSelect.dispatchEvent(new Event('change'));
-                        cantidadInput.dispatchEvent(new Event('input'));
-                    }, 300);
-                }, 300);
-            }, 100);
+                    provSelect.dispatchEvent(new Event('change'));
+                }, 400);
+            }, 400);
         }
     }
 
-    // ---- Cálculo global de totales ----
     function actualizarTotalesGenerales() {
         let totalMateriales = 0;
         document.querySelectorAll('.material-item .subtotal-material').forEach(el => {
@@ -396,9 +389,9 @@
         document.getElementById('totalFinal').innerText = `$${total.toFixed(2)}`;
     }
 
-    // ---- Eventos de agregar y eliminar ----
     document.getElementById('btnAgregarMaterial').addEventListener('click', () => agregarMaterialConDatos());
     document.getElementById('btnAgregarServicio').addEventListener('click', () => agregarServicioConDatos());
+    
     document.addEventListener('click', function(e) {
         if (e.target.closest('.eliminar-material')) {
             e.target.closest('.material-item').remove();
@@ -409,23 +402,23 @@
             actualizarTotalesGenerales();
         }
     });
-    document.getElementById('costo_equipo').addEventListener('input', actualizarTotalesGenerales);
-    document.getElementById('gastos_generales').addEventListener('input', actualizarTotalesGenerales);
-    document.getElementById('margen_ganancia').addEventListener('input', actualizarTotalesGenerales);
 
-    // ---- Precargar datos existentes (modo edición) ----
-    @if(isset($materialesExistentes) && count($materialesExistentes))
-        const materialesExistentes = @json($materialesExistentes);
-        materialesExistentes.forEach(mat => agregarMaterialConDatos(mat));
-    @endif
-    @if(isset($serviciosExistentes) && count($serviciosExistentes))
-        const serviciosExistentes = @json($serviciosExistentes);
-        serviciosExistentes.forEach(serv => agregarServicioConDatos(serv));
-    @endif
-    // Disparar el cálculo de totales después de un breve tiempo (para que los subtotales se calculen)
-    setTimeout(actualizarTotalesGenerales, 500);
+    ['costo_equipo', 'gastos_generales', 'margen_ganancia'].forEach(id => {
+        document.getElementById(id).addEventListener('input', actualizarTotalesGenerales);
+    });
 
-    // Envío del formulario
+    // Carga inicial en edición
+    @if(isset($materialesExistentes))
+        @foreach($materialesExistentes as $mat)
+            agregarMaterialConDatos({!! json_encode($mat) !!});
+        @endforeach
+    @endif
+    @if(isset($serviciosExistentes))
+        @foreach($serviciosExistentes as $serv)
+            agregarServicioConDatos({!! json_encode($serv) !!});
+        @endforeach
+    @endif
+
     document.getElementById('cotizacionForm').addEventListener('submit', function(e) {
         const materiales = [];
         document.querySelectorAll('.material-item').forEach(row => {
@@ -435,12 +428,13 @@
             if (matSelect.value && provSelect.value) {
                 materiales.push({
                     material_id: matSelect.value,
-                    proveedor_id: provSelect.value,
-                    cantidad: cantidad,
-                    precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
+                    proveedor_id: provSelect.options[provSelect.selectedIndex].dataset.proveedorId,
+                    id_prod: provSelect.value, // ENVIAMOS ID_PROD
+                    cantidad: cantidad
                 });
             }
         });
+
         const servicios = [];
         document.querySelectorAll('.servicio-item').forEach(row => {
             const servSelect = row.querySelector('.servicio-select');
@@ -448,13 +442,13 @@
             const cantidad = row.querySelector('.cantidad-servicio').value;
             if (servSelect.value && provSelect.value) {
                 servicios.push({
-                    mano_obra_id: servSelect.value,
-                    proveedor_id: provSelect.value,
+                    mano_obra_id: provSelect.value, // Es el ID de la tabla manoobra
                     cantidad: cantidad,
-                    precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio,
+                    precio_unitario: provSelect.options[provSelect.selectedIndex].dataset.precio
                 });
             }
         });
+
         document.getElementById('materiales_json').value = JSON.stringify(materiales);
         document.getElementById('servicios_json').value = JSON.stringify(servicios);
     });
