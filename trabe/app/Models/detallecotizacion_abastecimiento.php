@@ -7,34 +7,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
-class detallecotizacion extends Model
+class detallecotizacion_abastecimiento extends Model
 {
     use HasFactory, SoftDeletes;
     
-    protected $table = "detallecotizacion"; 
-    protected $primaryKey = "ID_DetalleCotiza";
+    protected $table = "detallecotizacion_abastecimiento"; 
+    protected $primaryKey = "ID_det_ab";
     public $incrementing = true;
     protected $keyType = "int";
     
-    protected $ID_DetalleCotiza;
+    protected $ID_det_ab;
     protected $fk_id_cotizacion;
+    protected $fk_id_abastecimiento;
     protected $cantidad;
-    protected $fk_id_mano_obra;
+    
     
     protected $fillable = [
-        "ID_DetalleCotiza",
+        "ID_det_ab",
         "fk_id_cotizacion",
-        "cantidad",
-        "fk_id_mano_obra"
+        "fk_id_abastecimiento",
+        "cantidad"
     ];
+
     public $timestamps = false;
 
-    public function manoObra(){
-        return $this->belongsTo(ManoObra::class, 'fk_id_mano_obra', 'ID_mano_obra');
+    public function abastecimiento()
+    {
+        return $this->belongsTo(abastecimiento::class, 'fk_id_abastecimiento', 'ID_prod');
     }
 
     public function cotizacion()
     {
         return $this->belongsTo(cotizacion::class, 'fk_id_cotizacion', 'ID_cotizacion');
+        
     }
 }

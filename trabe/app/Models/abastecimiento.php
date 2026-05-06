@@ -24,8 +24,9 @@ class abastecimiento extends Model
     return $this->belongsTo(Material::class, 'fk_id_material', 'ID_Material');
 }
 
-public function proveedor()
-{
-    return $this->belongsTo(proveedores::class, 'fk_id_proveedor', 'ID_proveedor');
-}
+    // Relación: Un abastecimiento pertenece a un proveedor
+    public function proveedor()
+    {
+        return $this->belongsTo(proveedores::class, 'fk_id_proveedor', 'ID_proveedor');
+    }
 }
