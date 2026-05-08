@@ -58,7 +58,7 @@
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Correo electrónico</label>
-                    <input type="email" id="correo" readonly class="w-full border rounded-lg bg-gray-100 px-4 py-2">
+                    <input type="email" id="email" readonly class="w-full border rounded-lg bg-gray-100 px-4 py-2">
                 </div>
             </div>
         </div>
@@ -133,9 +133,9 @@
 
     const clienteSelect = document.getElementById('cliente_id');
     const telefonoInput = document.getElementById('telefono');
-    const correoInput = document.getElementById('correo');
+    const correoInput = document.getElementById('email');
     const clientesData = {!! json_encode($clientes->map(function($c) {
-        return ['id' => $c->ID_cliente, 'telefono' => $c->telefono, 'correo' => $c->correo_e ?? ''];
+        return ['id' => $c->ID_cliente, 'telefono' => $c->telefono, 'correo' => $c->email ?? ''];
         })->values()) !!};
     const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
     const categoriasServicios = {!! json_encode($categoriasServicios) !!};

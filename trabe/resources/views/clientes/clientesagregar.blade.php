@@ -54,6 +54,14 @@
                                placeholder="5551234567" required>
                         @error('telefono') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
+                    
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-2">Email *</label>
+                        <input type="email" name="email" value="{{ old('email', $cliente->email ?? '') }}" 
+                               class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                               placeholder="ejemplo@correo.com" required>
+                        @error('email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
 
                     <div>
                         <label class="block text-slate-700 font-semibold mb-2">Dirección *</label>

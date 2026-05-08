@@ -27,6 +27,7 @@ class ClienteController extends Controller
             'nombre' => 'required|string|max:50|unique:clientes,nombre',
             'telefono' => 'required|string|max:11|unique:clientes,telefono',
             'direccion' => 'required|string|max:80',
+            'email' => 'required|string|max:80',
         ]);
 
         try {
@@ -50,6 +51,7 @@ class ClienteController extends Controller
             'nombre' => 'required|string|max:50|unique:clientes,nombre,' . $id . ',ID_cliente', // Ajusta 'ID_cliente' si tu PK se llama distinto
             'telefono' => 'required|string|max:11|unique:clientes,telefono,' . $id . ',ID_cliente',
             'direccion' => 'required|string|max:80',
+            'email' => 'required|string|max:80'
         ]);
 
         try {

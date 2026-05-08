@@ -89,7 +89,7 @@
                         </div>
                         <div class="flex flex-col text-sm text-slate-600">
                             <span class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->telefono ?? 'S/T' }}</span>
-                            <span class="flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->correo_e ?? 'S/C' }}</span>
+                            <span class="flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->email ?? 'S/C' }}</span>
                         </div>
                     </div>
                 </div>

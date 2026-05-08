@@ -17,14 +17,12 @@ class servicio extends Model
         'fk_id_categoria', 
         'nombre'
     ];
+    public function manoObra(){
+    return $this->hasMany(ManoObra::class, 'fk_id_servicio', 'ID_servicio');
+}
 
-    public function categoria()
-{
+    public function categoria(){
     return $this->belongsTo(Categoria::class, 'fk_id_categoria', 'ID_Categoria');
 }
 
-public function manoObras()
-{
-    return $this->hasMany(ManoObra::class, 'fk_id_servicio', 'ID_servicio');
-}
 }

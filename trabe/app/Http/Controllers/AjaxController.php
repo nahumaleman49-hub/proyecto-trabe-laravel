@@ -36,22 +36,27 @@ class AjaxController extends Controller
     }
 
     public function proveedoresPorMaterial($id)
-    {
-        // Cargamos la relación 'material' (singular) como definimos en el modelo abastecimiento
-        $proveedores = Abastecimiento::with(['proveedor', 'materiales'])
+{
+    try {
+        $proveedores = Abastecimiento::with('proveedor')
             ->where('fk_id_material', $id)
             ->get()
             ->map(function ($ab) {
+                if (!$ab->proveedor || !$ab->material) {
+                    throw new \Exception("Relación nula para abastecimiento ID {$ab->ID_prod}");
+                }
                 return [
-                    'id'      => $ab->proveedor->ID_proveedor ?? null,
-                    'text'    => $ab->proveedor->nombre ?? 'Sin nombre',
-                    'precio'  => $ab->precio,
-                    'unidad'  => $ab->materiales->medidas ?? 'unid',
-                    'id_prod' => $ab->ID_prod // IMPORTANTE: Usando tu llave primaria real
+                    'id' => $ab->proveedor->ID_proveedor,
+                    'text' => $ab->proveedor->nombre,
+                    'precio' => $ab->precio,
+                    'unidad' => $ab->material->medidas,
                 ];
             });
         return response()->json($proveedores);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     public function categoriasServicios()
     {

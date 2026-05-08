@@ -68,6 +68,10 @@
                                 {{ $cliente->telefono }}
                             </div>
                             <div class="flex items-start text-slate-600 text-sm">
+                                <i data-lucide="mail" class="w-4 h-4 mr-3 mt-0.5 text-slate-400"></i>
+                                <span class="line-clamp-2">{{ $cliente->email }}</span>
+                            </div>
+                            <div class="flex items-start text-slate-600 text-sm">
                                 <i data-lucide="map-pin" class="w-4 h-4 mr-3 mt-0.5 text-slate-400"></i>
                                 <span class="line-clamp-2">{{ $cliente->direccion }}</span>
                             </div>

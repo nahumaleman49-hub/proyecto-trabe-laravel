@@ -16,7 +16,7 @@ class clientes extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
-        'nombre', 'telefono', 'direccion'
+        'nombre', 'telefono', 'direccion', 'email'
     ];
 
     public $timestamps = false;
