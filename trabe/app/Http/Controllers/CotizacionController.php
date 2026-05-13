@@ -156,7 +156,8 @@ class CotizacionController extends Controller
             'proyecto.cliente',
             'detallesMateriales.abastecimiento.material.categoria',
             'detallesMateriales.abastecimiento.proveedor',
-            'detallesManoObra.manoObra.servicio.categoria'
+            'detallesManoObra.manoObra.servicio.categoria',
+            'detallesManoObra.manoObra.proveedor'
         ])->findOrFail($id);
 
         // Formatear Materiales para el JS
