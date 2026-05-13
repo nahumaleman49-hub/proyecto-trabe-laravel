@@ -55,7 +55,6 @@ class AjaxController extends Controller
         return response()->json($data);
     }
 
-
     public function categoriasServicios()
     {
         $cats = Categoria::whereHas('servicios')->get(['ID_Categoria as id', 'nombre as text']);

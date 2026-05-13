@@ -403,12 +403,12 @@ lucide.createIcons();
 // ================================================================
 const clienteSelect = document.getElementById('cliente_id');
 const telefonoInput = document.getElementById('telefono');
-const correoInput   = document.getElementById('correo');
+const emailInput   = document.getElementById('email');
 
 const clientesData = {!! json_encode($clientes->map(fn($c) => [
     'id'       => $c->ID_cliente,
     'telefono' => $c->telefono,
-    'correo'   => $c->correo_e ?? ''
+    'email'   => $c->email ?? ''
 ])->values()) !!};
 
 const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
@@ -417,7 +417,7 @@ const categoriasServicios  = {!! json_encode($categoriasServicios) !!};
 clienteSelect.addEventListener('change', function () {
     const sel = clientesData.find(c => c.id == this.value);
     telefonoInput.value = sel?.telefono || '';
-    correoInput.value   = sel?.correo   || '';
+    emailInput.value   = sel?.email   || '';
 });
 if (clienteSelect.value) clienteSelect.dispatchEvent(new Event('change'));
 

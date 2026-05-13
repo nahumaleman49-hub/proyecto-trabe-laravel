@@ -86,7 +86,7 @@
                     <div class="space-y-1">
                         <p class="text-xl font-black text-slate-800">{{ $cotizacion->proyecto->cliente->nombre ?? 'N/A' }}</p>
                         <p class="text-slate-500 flex items-center gap-2 text-sm">
-                            <i data-lucide="mail" class="w-4 h-4"></i> {{ $cotizacion->proyecto->cliente->correo_e ?? 'Sin correo' }}
+                            <i data-lucide="mail" class="w-4 h-4"></i> {{ $cotizacion->proyecto->cliente->email?? 'Sin correo' }}
                         </p>
                         <p class="text-slate-500 flex items-center gap-2 text-sm">
                             <i data-lucide="phone" class="w-4 h-4"></i> {{ $cotizacion->proyecto->cliente->telefono ?? 'Sin teléfono' }}
