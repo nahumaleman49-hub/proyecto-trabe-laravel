@@ -11,22 +11,27 @@
 
 <div class="min-h-screen pb-12">
     {{-- Cabecera con gradiente reducido --}}
-    <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
+    <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800 shadow-inner">
         <div class="absolute inset-0 flex items-center justify-center">
             <div class="text-center text-white">
-                <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-2"></i>
-                <h1 class="text-3xl font-bold">Cotización #{{ $cotizacion->ID_cotizacion }}</h1>
-                <p class="text-slate-300">Detalle completo de la estimación</p>
+                <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-2 opacity-80"></i>
+                <h1 class="text-3xl font-black tracking-tight">COTIZACIÓN #{{ str_pad($cotizacion->ID_cotizacion, 5, '0', STR_PAD_LEFT) }}</h1>
+                <p class="text-slate-300 font-medium tracking-wide italic">Vista detallada del presupuesto</p>
             </div>
         </div>
     </div>
 
     <div class="container mx-auto px-4 py-8 max-w-5xl">
         {{-- Botón Volver --}}
-        <a href="{{ route('cotizaciones') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-6">
-            <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-            Volver a Cotizaciones
-        </a>
+        <div class="flex justify-between items-center mb-6">
+            <a href="{{ route('cotizaciones') }}" class="inline-flex items-center text-slate-600 hover:text-slate-900 transition-colors font-medium group">
+                <i data-lucide="arrow-left" class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                Volver a Cotizaciones
+            </a>
+            <div class="text-xs font-mono text-slate-400 uppercase tracking-widest">
+                Cotizacion #: {{ $cotizacion->ID_cotizacion }}
+            </div>
+        </div>
 
         @php
             $estados = [0 => 'Borrador', 1 => 'Enviada', 2 => 'Aprobada', 3 => 'Rechazada'];
@@ -39,87 +44,102 @@
             };
             
             // Cálculos
-            $materiales = $cotizacion->detalles->whereNotNull('fk_id_material');
-            $servicios = $cotizacion->detalles->whereNotNull('fk_id_mano_obra');
+            $materiales = $cotizacion->detallesMateriales ?? collect();
+            $servicios = $cotizacion->detallesManoObra ?? collect();
             
-            $subtotalMateriales = $materiales->sum(fn($d) => $d->cantidad * $d->precio_unit);
-            $subtotalServicios = $servicios->sum(fn($d) => $d->cantidad * $d->precio_unit);
-            $subtotalGeneral = $subtotalMateriales + $subtotalServicios;
+        $subtotalMateriales = $materiales->sum(function($det) {
+            return $det->cantidad * ($det->abastecimiento->precio ?? 0);
+        });
+            $subtotalServicios = $servicios->sum(function($det) {
+            return $det->cantidad * ($det->manoObra->precio ?? 0);
+         });
         @endphp
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
             {{-- Barra de Estado Superior --}}
-            <div class="bg-slate-50 px-8 py-4 border-b flex justify-between items-center flex-wrap gap-2">
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $badgeColor }}">
-                        {{ $estados[$cotizacion->estado] ?? 'Desconocido' }}
-                    </span>
-                    <span class="text-slate-500 text-sm flex items-center gap-1">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        {{ \Carbon\Carbon::parse($cotizacion->fecha)->format('d/m/Y') }}
-                    </span>
+            <div class="bg-slate-50 px-8 py-5 border-b flex justify-between items-center flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Estado Actual</span>
+                        <span class="px-3 py-0.5 rounded-full text-xs font-black border uppercase {{ $badgeColor }}">
+                            {{ $estados[$cotizacion->estado] ?? 'Desconocido' }}
+                        </span>
+                    </div>
+                    <div class="w-px h-8 bg-slate-200"></div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Fecha Emisión</span>
+                        <span class="text-slate-700 text-sm font-bold flex items-center gap-1">
+                            <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+                            {{ \Carbon\Carbon::parse($cotizacion->fecha)->format('d/m/Y') }}
+                        </span>
+                    </div>
                 </div>
-                <div class="text-slate-400 font-mono text-sm tracking-widest uppercase">Folio: {{ str_pad($cotizacion->ID_cotizacion, 5, '0', STR_PAD_LEFT) }}</div>
+                <div class="hidden md:block">
+                    <span class="text-slate-400 font-black italic">QOSTO SYSTEM</span>
+                </div>
             </div>
 
-            {{-- Información del Proyecto --}}
-            <div class="p-8 border-b bg-white">
-                <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-l-4 border-slate-700 pl-3">
-                    Información General
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Proyecto</p>
-                            <p class="text-lg font-semibold text-slate-800">{{ $cotizacion->proyecto->nombre ?? 'Sin nombre' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Ubicación / Fechas</p>
-                            <p class="text-slate-600">
-                                {{ $cotizacion->proyecto->fecha_ini ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_ini)->format('d/m/Y') : 'N/A' }} 
-                                al 
-                                {{ $cotizacion->proyecto->fecha_fin ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_fin)->format('d/m/Y') : 'N/A' }}
-                            </p>
-                        </div>
+            {{-- Información del Proyecto y Cliente --}}
+            <div class="p-8 border-b bg-white grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Información del Cliente</h2>
+                    <div class="space-y-1">
+                        <p class="text-xl font-black text-slate-800">{{ $cotizacion->proyecto->cliente->nombre ?? 'N/A' }}</p>
+                        <p class="text-slate-500 flex items-center gap-2 text-sm">
+                            <i data-lucide="mail" class="w-4 h-4"></i> {{ $cotizacion->proyecto->cliente->email?? 'Sin correo' }}
+                        </p>
+                        <p class="text-slate-500 flex items-center gap-2 text-sm">
+                            <i data-lucide="phone" class="w-4 h-4"></i> {{ $cotizacion->proyecto->cliente->telefono ?? 'Sin teléfono' }}
+                        </p>
                     </div>
-                    <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <div>
-                            <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Cliente</p>
-                            <p class="text-lg font-semibold text-slate-800">{{ $cotizacion->proyecto->cliente->nombre ?? 'N/A' }}</p>
-                        </div>
-                        <div class="flex flex-col text-sm text-slate-600">
-                            <span class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->telefono ?? 'S/T' }}</span>
-                            <span class="flex items-center gap-2"><i data-lucide="mail" class="w-3 h-3"></i> {{ $cotizacion->proyecto->cliente->email ?? 'S/C' }}</span>
-                        </div>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 text-right">Datos del Proyecto</h2>
+                    <div class="text-right space-y-1">
+                        <p class="text-lg font-bold text-slate-800">{{ $cotizacion->proyecto->nombre ?? 'Sin nombre' }}</p>
+                        <p class="text-sm text-slate-500">
+                            {{ $cotizacion->proyecto->fecha_ini ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_ini)->format('d/m/Y') : 'N/A' }} 
+                            — 
+                            {{ $cotizacion->proyecto->fecha_fin ? \Carbon\Carbon::parse($cotizacion->proyecto->fecha_fin)->format('d/m/Y') : 'N/A' }}
+                        </p>
+                        <p class="text-xs font-mono text-slate-400 uppercase">Presupuesto Base: ${{ number_format($cotizacion->proyecto->presupuesto ?? 0, 2) }}</p>
                     </div>
                 </div>
             </div>
 
             {{-- Tabla de Materiales --}}
             @if($materiales->count())
-            <div class="p-8 border-b">
-                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <i data-lucide="package" class="w-5 h-5 text-blue-500"></i> Desglose de Materiales
+            <div class="px-8 pt-8">
+                <h3 class="text-sm font-black text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-tight">
+                    <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="package" class="w-5 h-5"></i>
+                    </span>
+                    Desglose de Insumos y Materiales
                 </h3>
-                <div class="overflow-x-auto rounded-lg border border-slate-100">
+                <div class="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
                     <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-widest border-b">
                             <tr>
-                                <th class="text-left py-3 px-4">Descripción</th>
-                                <th class="text-left py-3 px-4">Proveedor</th>
-                                <th class="text-center py-3 px-4">Cant.</th>
-                                <th class="text-right py-3 px-4">P. Unitario</th>
-                                <th class="text-right py-3 px-4">Subtotal</th>
+                                <th class="text-left py-4 px-4">Descripción del Material</th>
+                                <th class="text-left py-4 px-4">Proveedor</th>
+                                <th class="text-center py-4 px-4">Cantidad</th>
+                                <th class="text-right py-4 px-4">Precio Unit.</th>
+                                <th class="text-right py-4 px-4">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach($materiales as $det)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-4 font-medium">{{ $det->material->nombre ?? 'Material' }} <span class="text-slate-400 font-normal">({{ $det->material->medidas ?? '' }})</span></td>
-                                <td class="py-3 px-4 text-slate-500 text-xs">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
-                                <td class="py-3 px-4 text-center">{{ number_format($det->cantidad, 2) }}</td>
-                                <td class="py-3 px-4 text-right text-slate-500">${{ number_format($det->precio_unit, 2) }}</td>
-                                <td class="py-3 px-4 text-right font-bold text-slate-700">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
+                            <tr class="hover:bg-blue-50/30 transition-colors">
+                                <td class="py-4 px-4">
+                                    {{-- Corregido para usar la relación 'materiales' como definiste en tu modelo --}}
+                                    <p class="font-bold text-slate-800">{{ $det->abastecimiento->materiales->nombre?? 'Material no especificado' }}</p>
+                                    <p class="text-[10px] text-slate-400 uppercase">{{ $det->abastecimiento->materiales->medidas ?? 'Sin medidas' }}</p>
+                                </td>
+                                <td class="py-4 px-4 text-slate-500 font-medium">{{ $det->abastecimiento->proveedor->nombre?? 'N/A' }}</td>
+                                <td class="py-4 px-4 text-center font-mono font-bold">{{ number_format($det->cantidad * ($det->abastecimiento->precio ?? 0), 2) }}</td>
+                                <td class="py-4 px-4 text-right text-slate-400 font-mono">${{ number_format($det->abastecimiento-> precio ?? 0, 2) }}</td>
+                                <td class="py-4 px-4 text-right font-black text-slate-700 font-mono">${{ number_format($det->cantidad * ( $det->abastecimiento->precio ?? 0), 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -130,32 +150,35 @@
 
             {{-- Tabla de Servicios --}}
             @if($servicios->count())
-            <div class="p-8 border-b">
-                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <i data-lucide="briefcase" class="w-5 h-5 text-amber-500"></i> Mano de Obra y Servicios
+            <div class="px-8 pt-8 pb-8">
+                <h3 class="text-sm font-black text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-tight">
+                    <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </span>
+                    Mano de Obra y Servicios Externos
                 </h3>
-                <div class="overflow-x-auto rounded-lg border border-slate-100">
+                <div class="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
                     <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-widest border-b">
                             <tr>
-                                <th class="text-left py-3 px-4">Servicio / Unidad</th>
-                                <th class="text-left py-3 px-4">Proveedor</th>
-                                <th class="text-center py-3 px-4">Cant.</th>
-                                <th class="text-right py-3 px-4">P. Unitario</th>
-                                <th class="text-right py-3 px-4">Subtotal</th>
+                                <th class="text-left py-4 px-4">Servicio Ejecutado</th>
+                                <th class="text-left py-4 px-4">Especialista / Proveedor</th>
+                                <th class="text-center py-4 px-4">Cantidad</th>
+                                <th class="text-right py-4 px-4">Precio Unit.</th>
+                                <th class="text-right py-4 px-4">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach($servicios as $det)
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-4 font-medium">
-                                    {{ $det->manoObra->servicio->nombre ?? 'Servicio' }}
-                                    <span class="block text-[10px] text-slate-400 uppercase tracking-tighter">{{ $det->manoObra->unidad ?? 'Unidad' }}</span>
+                            <tr class="hover:bg-amber-50/30 transition-colors">
+                                <td class="py-4 px-4">
+                                    <p class="font-bold text-slate-800">{{ $det->manoObra->servicio->nombre ?? 'Servicio' }}</p>
+                                    <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[9px] font-black text-slate-500 uppercase">{{ $det->manoObra->unidad ?? 'Unidad' }}</span>
                                 </td>
-                                <td class="py-3 px-4 text-slate-500 text-xs">{{ $det->proveedor->nombre ?? 'N/A' }}</td>
-                                <td class="py-3 px-4 text-center">{{ number_format($det->cantidad, 2) }}</td>
-                                <td class="py-3 px-4 text-right text-slate-500">${{ number_format($det->precio_unit, 2) }}</td>
-                                <td class="py-3 px-4 text-right font-bold text-slate-700">${{ number_format($det->cantidad * $det->precio_unit, 2) }}</td>
+                                <td class="py-4 px-4 text-slate-500 font-medium">{{ $det->manoObra->proveedor->nombre ?? 'N/A' }}</td>
+                                <td class="py-4 px-4 text-center font-mono font-bold">{{ number_format($det->cantidad, 2) }}</td>
+                                <td class="py-4 px-4 text-right text-slate-400 font-mono">${{ number_format($det->manoObra->precio ?? 0, 2) }}</td>
+                                <td class="py-4 px-4 text-right font-black text-slate-700 font-mono">${{ number_format($det->cantidad * ($det->manoObra->precio ?? 0), 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -165,35 +188,38 @@
             @endif
 
             {{-- Resumen Económico Final --}}
-            <div class="p-8 bg-slate-900 text-slate-300">
-                <div class="max-w-xs ml-auto space-y-3">
-                    <div class="flex justify-between text-sm">
-                        <span>Total Materiales:</span>
-                        <span class="text-white">${{ number_format($subtotalMateriales, 2) }}</span>
+            <div class="p-10 bg-slate-900 text-slate-400">
+                <div class="max-w-xs ml-auto space-y-4">
+                    <div class="flex justify-between text-xs font-bold uppercase tracking-widest">
+                        <span>Subtotal Materiales</span>
+                        <span class="text-white font-mono">${{ number_format($subtotalMateriales, 2) }}</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span>Total Mano de Obra:</span>
-                        <span class="text-white">${{ number_format($subtotalServicios, 2) }}</span>
+                    <div class="flex justify-between text-xs font-bold uppercase tracking-widest">
+                        <span>Subtotal Servicios</span>
+                        <span class="text-white font-mono">${{ number_format($subtotalServicios, 2) }}</span>
                     </div>
-                    <div class="pt-4 border-t border-slate-700 flex justify-between items-end">
-                        <span class="text-lg font-bold text-white">TOTAL FINAL</span>
-                        <span class="text-3xl font-black text-emerald-400">${{ number_format($cotizacion->total, 2) }}</span>
+                    <div class="pt-6 border-t border-slate-700 flex justify-between items-center">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Total Cotizado</span>
+                            <span class="text-lg font-black text-white leading-none">MONTO NETO</span>
+                        </div>
+                        <span class="text-4xl font-black text-emerald-400 font-mono tracking-tighter">${{ number_format($cotizacion->total, 2) }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Acciones Finales --}}
-        <div class="mt-8 flex justify-end gap-4">
+        <div class="mt-8 flex flex-col md:flex-row justify-end gap-4">
             <a href="{{ route('cotizaciones.editar', $cotizacion->ID_cotizacion) }}" 
-               class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl hover:bg-slate-50 transition-all font-semibold shadow-sm">
-                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                Editar Cotización
+               class="group inline-flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-700 px-8 py-3 rounded-2xl hover:border-blue-600 hover:text-blue-600 transition-all font-bold shadow-sm">
+                <i data-lucide="edit-2" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                Editar Presupuesto
             </a>
             <a href="{{ route('cotizaciones.pdf', $cotizacion->ID_cotizacion) }}" target="_blank" 
-               class="inline-flex items-center gap-2 bg-slate-800 text-white px-6 py-2.5 rounded-xl hover:bg-slate-900 transition-all font-semibold shadow-md">
-                <i data-lucide="file-down" class="w-4 h-4"></i>
-                Generar PDF
+               class="group inline-flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-3 rounded-2xl hover:bg-slate-950 transition-all font-bold shadow-lg shadow-slate-200">
+                <i data-lucide="file-down" class="w-5 h-5 group-hover:translate-y-0.5 transition-transform"></i>
+                Descargar Documento PDF
             </a>
         </div>
     </div>

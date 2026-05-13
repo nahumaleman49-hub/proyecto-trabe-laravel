@@ -19,7 +19,7 @@ class abastecimiento extends Model
         'precio'
     ];
 
-    public function material()
+    public function materiales()
 {
     return $this->belongsTo(materiales::class, 'fk_id_material', 'ID_Material');
 }

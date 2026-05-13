@@ -8,7 +8,8 @@ use App\Models\cotizacion as Cotizacion;
 use App\Models\detallecotizacion as DetalleServicio;
 use App\Models\detallecotizacion_abastecimiento as DetalleMaterial;
 use App\Models\categoria as Categoria;
-use App\Models\materiales as Material;
+use App\Models\materiales as materiales;
+use App\Models\abastecimiento as Abastecimiento;
 use App\Models\manoobra as ManoObra;
 use App\Models\proveedores as proveedor;
 use Illuminate\Http\Request;
@@ -30,33 +31,52 @@ class CotizacionController extends Controller
         return view('cotizaciones.nueva', compact('clientes', 'categoriasMateriales', 'categoriasServicios'));
     }
 
-    // Métodos AJAX necesarios para que la vista funcione
     public function getMateriales($categoria_id) {
-        return Material::where('fk_id_categoria', $categoria_id)->get(['ID_Material as id', 'nombre as text', 'medidas']);
+        $data = materiales::where('fk_id_categoria', $categoria_id)
+            ->get(['ID_Material as id', 'nombre as text', 'medidas']);
+        return response()->json($data);
     }
 
+    // ESTA ES LA FUNCIÓN QUE ESTÁ FALLANDO EN TU VISTA
     public function getProveedoresMaterial($material_id) {
-        return DB::table('abastecimiento')
+        $proveedores = DB::table('abastecimiento')
             ->join('proveedores', 'abastecimiento.fk_id_proveedor', '=', 'proveedores.ID_proveedor')
             ->where('abastecimiento.fk_id_material', $material_id)
-            ->select('proveedores.ID_proveedor as id', 'proveedores.nombre as text', 'abastecimiento.precio', 'abastecimiento.ID_prod') // Usando ID_prod
+            ->whereNull('abastecimiento.deleted_at')
+            ->select(
+                'proveedores.ID_proveedor as id', 
+                'proveedores.nombre as text', 
+                'abastecimiento.precio', 
+                'abastecimiento.ID_prod'
+            )
             ->get();
+
+        // Retornamos una respuesta JSON pura para que el JS no se bloquee
+        return response()->json($proveedores);
     }
 
     public function getServicios($categoria_id) {
-        return DB::table('manoobra')
+        $servicios = DB::table('manoobra')
             ->join('servicio', 'manoobra.fk_id_servicio', '=', 'servicio.ID_servicio')
             ->where('servicio.fk_id_categoria', $categoria_id)
             ->select('manoobra.ID_mano_obra as id', 'servicio.nombre as text')
-            ->distinct()->get();
+            ->distinct()
+            ->get();
+        return response()->json($servicios);
     }
 
     public function getProveedoresServicio($mano_obra_id) {
-        return DB::table('manoobra')
+        $data = DB::table('manoobra')
             ->join('proveedores', 'manoobra.fk_id_proveedor', '=', 'proveedores.ID_proveedor')
             ->where('manoobra.ID_mano_obra', $mano_obra_id)
-            ->select('proveedores.ID_proveedor as id', 'proveedores.nombre as text', 'manoobra.precio', 'manoobra.unidad')
+            ->select(
+                'proveedores.ID_proveedor as id', 
+                'proveedores.nombre as text', 
+                'manoobra.precio', 
+                'manoobra.unidad'
+            )
             ->get();
+        return response()->json($data);
     }
 
     public function store(Request $request)
@@ -64,7 +84,6 @@ class CotizacionController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Crear proyecto
             $proyecto = Proyecto::create([
                 'nombre' => $request->nombre_proyecto,
                 'fk_id_cliente' => $request->cliente_id,
@@ -73,7 +92,6 @@ class CotizacionController extends Controller
                 'presupuesto' => 0,
             ]);
 
-            // 2. Crear cotización
             $cotizacion = Cotizacion::create([
                 'fk_id_proyecto' => $proyecto->ID_proyecto,
                 'fecha' => now(),
@@ -82,26 +100,19 @@ class CotizacionController extends Controller
             ]);
 
             $totalBase = 0;
-
-            // 3. Guardar Materiales
             $materiales = json_decode($request->materiales_json, true) ?? [];
             foreach ($materiales as $mat) {
-                $abastecimiento = DB::table('abastecimiento')
-                    ->where('fk_id_material', $mat['material_id'])
-                    ->where('fk_id_proveedor', $mat['proveedor_id'])
-                    ->first();
-
-                if ($abastecimiento) {
+                $abs = Abastecimiento::find($mat['abastecimiento_id']);
+                if ($abs) {
                     DetalleMaterial::create([
                         'fk_id_cotizacion' => $cotizacion->ID_cotizacion,
-                        'fk_id_abastecimiento' => $abastecimiento->ID_prod, // Respetando ID_prod
+                        'fk_id_abastecimiento' => $abs->ID_prod,
                         'cantidad' => $mat['cantidad']
                     ]);
-                    $totalBase += $mat['cantidad'] * $abastecimiento->precio;
+                    $totalBase += $mat['cantidad'] * $abs->precio;
                 }
             }
 
-            // 4. Guardar Servicios
             $servicios = json_decode($request->servicios_json, true) ?? [];
             foreach ($servicios as $serv) {
                 DetalleServicio::create([
@@ -112,14 +123,10 @@ class CotizacionController extends Controller
                 $totalBase += $serv['cantidad'] * $serv['precio_unitario'];
             }
 
-            // 5. Cálculos Finales
             $costoEquipo = $request->costo_equipo ?? 0;
-            $gastosPorc = $request->gastos_generales ?? 0;
-            $margenPorc = $request->margen_ganancia ?? 0;
-
             $subtotalBase = $totalBase + $costoEquipo;
-            $conGastos = $subtotalBase * (1 + $gastosPorc / 100);
-            $totalFinal = $conGastos * (1 + $margenPorc / 100);
+            $conGastos = $subtotalBase * (1 + ($request->gastos_generales ?? 0) / 100);
+            $totalFinal = $conGastos * (1 + ($request->margen_ganancia ?? 0) / 100);
 
             $cotizacion->update(['total' => $totalFinal]);
             $proyecto->update(['presupuesto' => $totalFinal]);
@@ -137,7 +144,7 @@ class CotizacionController extends Controller
     {
         $cotizacion = Cotizacion::with([
             'proyecto.cliente',
-            'detallesMateriales.abastecimiento.material', 
+            'detallesMateriales.abastecimiento.materiales', 
             'detallesMateriales.abastecimiento.proveedor',
             'detallesManoObra.manoObra.servicio'
         ])->findOrFail($id);
@@ -145,43 +152,39 @@ class CotizacionController extends Controller
         return view('cotizaciones.ver', compact('cotizacion'));
     }
 
-    public function pdf($id)
-    {
-        return redirect()->route('cotizaciones.ver', $id)->with('info', 'La generación de PDF estará disponible próximamente.');
-    }
-
     public function edit($id)
     {
         $cotizacion = Cotizacion::with([
             'proyecto.cliente',
-            'detallesMateriales.abastecimiento.material.categoria',
+            'detallesMateriales.abastecimiento.materiales',
             'detallesMateriales.abastecimiento.proveedor',
-            'detallesManoObra.manoObra.servicio.categoria',
+            'detallesManoObra.manoObra.servicio',
             'detallesManoObra.manoObra.proveedor'
         ])->findOrFail($id);
 
-        // Formatear Materiales para el JS
         $materialesExistentes = $cotizacion->detallesMateriales->map(function($d) {
             return [
-                'material_id'     => $d->abastecimiento->fk_id_material,
-                'proveedor_id'    => $d->abastecimiento->fk_id_proveedor,
-                'cantidad'        => $d->cantidad,
-                'precio_unitario' => $d->abastecimiento->precio,
-                'material_text'   => $d->abastecimiento->material->nombre,
-                'proveedor_text'  => $d->abastecimiento->proveedor->nombre,
-                'unidad'          => $d->abastecimiento->material->medidas,
+                'id_detalle'        => $d->ID_det_ab,
+                'abastecimiento_id' => $d->fk_id_abastecimiento,
+                'material_id'       => $d->abastecimiento->fk_id_material ?? $d->fk_id_abastecimiento,
+                'material_text'     => $d->abastecimiento->materiales->nombre ?? 'N/A',
+                'proveedor_text'    => $d->abastecimiento->proveedor->nombre ?? 'N/A',
+                'cantidad'          => $d->cantidad,
+                'precio_unitario'   => $d->abastecimiento->precio ?? 0,
+                'unidad'            => $d->abastecimiento->materiales->medidas ?? 'N/A',
             ];
         });
 
-        // Formatear Servicios para el JS
         $serviciosExistentes = $cotizacion->detallesManoObra->map(function($d) {
             return [
+                'id_detalle'      => $d->ID_detalle,
                 'mano_obra_id'    => $d->fk_id_mano_obra,
+                'servicio_id'     => $d->manoObra->fk_id_servicio ?? $d->fk_id_mano_obra,
                 'cantidad'        => $d->cantidad,
-                'precio_unitario' => $d->manoObra->precio,
-                'servicio_text'   => $d->manoObra->servicio->nombre,
+                'precio_unitario' => $d->manoObra->precio ?? 0,
+                'servicio_text'   => $d->manoObra->servicio->nombre ?? 'N/A',
                 'proveedor_text'  => $d->manoObra->proveedor->nombre ?? 'N/A',
-                'unidad'          => $d->manoObra->unidad,
+                'unidad'          => $d->manoObra->unidad ?? 'N/A',
             ];
         });
 
@@ -206,31 +209,23 @@ class CotizacionController extends Controller
                 'fk_id_cliente' => $request->cliente_id
             ]);
 
-            // Limpiar detalles anteriores
             $cotizacion->detallesMateriales()->delete();
             $cotizacion->detallesManoObra()->delete();
 
             $totalBase = 0;
-
-            // Procesar Materiales
             $materiales = json_decode($request->materiales_json, true) ?? [];
             foreach ($materiales as $mat) {
-                $abastecimiento = DB::table('abastecimiento')
-                    ->where('fk_id_material', $mat['material_id'])
-                    ->where('fk_id_proveedor', $mat['proveedor_id'])
-                    ->first();
-
-                if ($abastecimiento) {
+                $abs = Abastecimiento::find($mat['abastecimiento_id']);
+                if ($abs) {
                     DetalleMaterial::create([
                         'fk_id_cotizacion' => $cotizacion->ID_cotizacion,
-                        'fk_id_abastecimiento' => $abastecimiento->ID_prod, // Respetando ID_prod
+                        'fk_id_abastecimiento' => $abs->ID_prod,
                         'cantidad' => $mat['cantidad']
                     ]);
-                    $totalBase += $mat['cantidad'] * $abastecimiento->precio;
+                    $totalBase += $mat['cantidad'] * $abs->precio;
                 }
             }
 
-            // Procesar Servicios
             $servicios = json_decode($request->servicios_json, true) ?? [];
             foreach ($servicios as $serv) {
                 DetalleServicio::create([
@@ -241,7 +236,6 @@ class CotizacionController extends Controller
                 $totalBase += $serv['cantidad'] * $serv['precio_unitario'];
             }
 
-            // Recalcular Totales
             $subtotalBase = $totalBase + ($request->costo_equipo ?? 0);
             $conGastos = $subtotalBase * (1 + ($request->gastos_generales ?? 0) / 100);
             $totalFinal = $conGastos * (1 + ($request->margen_ganancia ?? 0) / 100);
@@ -254,7 +248,12 @@ class CotizacionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
         }
+    }
+
+    public function pdf($id)
+    {
+        return redirect()->route('cotizaciones.ver', $id)->with('info', 'La generación de PDF estará disponible próximamente.');
     }
 }

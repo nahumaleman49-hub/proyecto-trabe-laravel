@@ -6,8 +6,8 @@ use App\Models\clientes as Cliente;
 use App\Models\categoria as Categoria;
 use App\Models\materiales as materiales;
 use App\Models\abastecimiento as Abastecimiento;
-use App\Models\servicio as Servicio; 
-use App\Models\manoobra as ManoObra; // Ajustado a 'manoobra' según tu modelo
+use App\Models\servicio as Servicio;
+use App\Models\manoobra as ManoObra;
 use Illuminate\Http\Request;
 
 class AjaxController extends Controller
@@ -22,41 +22,38 @@ class AjaxController extends Controller
 
     public function categoriasMateriales()
     {
-        // Usamos whereHas con el nombre de la relación definida en el modelo Categoria
         $cats = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
         return response()->json($cats);
     }
 
     public function materialesPorCategoria($id)
     {
-        // Usamos ID_Material respetando las mayúsculas de tu modelo
         $materiales = materiales::where('fk_id_categoria', $id)
             ->get(['ID_Material as id', 'nombre as text', 'medidas']);
         return response()->json($materiales);
     }
 
     public function proveedoresPorMaterial($id)
-{
-    try {
-        $proveedores = Abastecimiento::with('proveedor')
+    {
+        $rows = Abastecimiento::with('proveedor')
             ->where('fk_id_material', $id)
-            ->get()
-            ->map(function ($ab) {
-                if (!$ab->proveedor || !$ab->material) {
-                    throw new \Exception("Relación nula para abastecimiento ID {$ab->ID_prod}");
-                }
-                return [
-                    'id' => $ab->proveedor->ID_proveedor,
-                    'text' => $ab->proveedor->nombre,
-                    'precio' => $ab->precio,
-                    'unidad' => $ab->material->medidas,
-                ];
-            });
-        return response()->json($proveedores);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
+            ->whereNull('deleted_at')
+            ->get();
+
+        // Devuelve JSON plano con las claves exactas que usa el JS en nueva.blade.php:
+        //   ID_prod  → value del <option> (ID de abastecimiento, lo que guarda el backend)
+        //   id       → ID_proveedor (guardado en data-proveedor-id por si se necesita)
+        //   text     → nombre del proveedor (se muestra en el label del <option>)
+        //   precio   → precio unitario (guardado en data-precio)
+        $data = $rows->map(fn($a) => [
+            'ID_prod' => $a->ID_prod,
+            'id'      => $a->fk_id_proveedor,
+            'text'    => $a->proveedor->nombre ?? 'Sin nombre',
+            'precio'  => $a->precio,
+        ]);
+
+        return response()->json($data);
     }
-}
 
     public function categoriasServicios()
     {
@@ -66,6 +63,8 @@ class AjaxController extends Controller
 
     public function serviciosPorCategoria($id)
     {
+        // Devuelve los servicios únicos de la categoría.
+        // El segundo select (proveedor) se carga con el ID_servicio.
         $servicios = Servicio::where('fk_id_categoria', $id)
             ->get(['ID_servicio as id', 'nombre as text']);
         return response()->json($servicios);
@@ -73,18 +72,26 @@ class AjaxController extends Controller
 
     public function proveedoresPorServicio($id)
     {
-        $proveedores = ManoObra::with('proveedor')
+        // $id es el ID_servicio elegido.
+        // Cada fila de manoobra es un proveedor distinto para ese servicio.
+        // El JS usa p.id como value del <option> → es el ID_mano_obra que
+        // guarda DetalleServicio (fk_id_mano_obra) en el backend.
+        $rows = ManoObra::with('proveedor')
             ->where('fk_id_servicio', $id)
-            ->get()
-            ->map(function ($mo) {
-                return [
-                    'id'           => $mo->ID_mano_obra,
-                    'text'         => ($mo->proveedor->nombre ?? 'Interno') . " - $" . number_format($mo->precio, 2),
-                    'precio'       => $mo->precio,
-                    'unidad'       => $mo->unidad,
-                    'proveedor_id' => $mo->fk_id_proveedor 
-                ];
-            });
-        return response()->json($proveedores);
+            ->get();
+
+        // Claves exactas que usa el JS en nueva.blade.php:
+        //   id      → ID_mano_obra  (value del <option>, lo que guarda el backend)
+        //   text    → nombre del proveedor
+        //   precio  → precio unitario (guardado en data-precio)
+        //   unidad  → unidad de medida (guardado en data-unidad)
+        $data = $rows->map(fn($m) => [
+            'id'     => $m->ID_mano_obra,
+            'text'   => $m->proveedor->nombre ?? 'Sin nombre',
+            'precio' => $m->precio,
+            'unidad' => $m->unidad ?? '',
+        ]);
+
+        return response()->json($data);
     }
 }
