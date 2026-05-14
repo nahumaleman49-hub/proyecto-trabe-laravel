@@ -390,7 +390,7 @@
 
         <div class="flex justify-end gap-4 mt-8">
             <a href="{{ route('cotizaciones') }}" class="border border-slate-300 px-6 py-2 rounded-lg">Cancelar</a>
-            <button type="submit" class="bg-slate-800 text-white px-6 py-2 rounded-lg">Guardar Cotización</button>
+            <button type="submit" class="bg-slate-800 text-white px-6 py-2 rounded-lg">Guardar</button>
         </div>
     </form>
 </div>

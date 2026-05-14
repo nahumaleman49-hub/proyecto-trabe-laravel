@@ -35,8 +35,8 @@
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Agregar Nuevo Proyecto</h2>
-                    <p class="text-slate-600 text-lg">Registra un nuevo proyecto en tu base de datos</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Gestión de Proyectos</h2>
+                    <p class="text-slate-600 text-lg">Registra un proyecto en tu base de datos</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <form method="GET" action="{{ route('proyectos') }}" class="flex flex-col md:flex-row gap-4">
@@ -44,7 +44,7 @@
                             <div class="relative">
                                 <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5"></i>
                                 <input type="text" name="search" value="{{ request('search') }}" 
-                                placeholder="Buscar por nombre del cliente..." 
+                                placeholder="Buscar por cliente" 
                                 class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500">
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                     </form>
                     <a href="{{ route('proyectos.agregar') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                         <i data-lucide="plus" class="w-5 h-5"></i>
-                        Nuevo Proyecto
+                        Agregar
                     </a>
                 </div>
             </div>

@@ -43,7 +43,7 @@
             </div>
             <a href="{{ route('clientes.agregar') }}" class="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-3 rounded-xl hover:bg-slate-900 transition-all shadow-md">
                 <i data-lucide="user-plus" class="w-5 h-5"></i>
-                Nuevo Cliente
+                Agregar
             </a>
         </div>
 

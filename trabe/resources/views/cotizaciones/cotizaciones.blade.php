@@ -31,12 +31,12 @@
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Crear Nueva Cotización</h2>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Crear Cotización</h2>
                     <p class="text-slate-600 text-lg">Genera una cotización detallada para tu próximo proyecto de construcción</p>
                 </div>
                 <a href="{{ route('cotizaciones.nueva') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>
-                    Nueva Cotización
+                    Nueva
                 </a>
             </div>
         </div>

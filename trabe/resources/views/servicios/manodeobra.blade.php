@@ -40,13 +40,13 @@
                 </div>
                 <a href="{{ route('mano.de.obra.agregar') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                     <i data-lucide="plus" class="w-5 h-5"></i>
-                    Añadir nuevo Servicio
+                    Añadir Servicio
                 </a>
             </div>
         </div>
 
         <div class="bg-white rounded-2xl p-8 shadow-lg">
-            <h2 class="text-3xl font-bold text-slate-800 mb-6">Lista de Servicios</h2>
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Servicios activos</h2>
             <div class="space-y-6">
                 @forelse($servicios as $servicio)
                 <div class="border border-slate-200 rounded-xl p-6 hover:border-slate-400 transition-colors">

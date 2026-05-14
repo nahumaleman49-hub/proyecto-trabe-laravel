@@ -70,7 +70,7 @@
 
                     <a href="{{ route('materiales.agregar') }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-shadow whitespace-nowrap">
                         <i data-lucide="plus" class="w-5 h-5"></i> 
-                        Nuevo Material
+                        Agregar
                     </a>
                 </div>
             </div>

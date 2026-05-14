@@ -78,7 +78,7 @@
                 <div class="mt-8 flex flex-col sm:flex-row gap-4 pt-6">
                     <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-3 rounded-xl hover:bg-slate-900 transition-all shadow-md font-bold">
                         <i data-lucide="save" class="w-5 h-5"></i>
-                        {{ isset($servicio) ? 'Actualizar Información Base' : 'Guardar Servicio' }}
+                        {{ isset($servicio) ? 'Actualizar Información Base' : 'Guardar' }}
                     </button>
                     <a href="{{ route('mano.de.obra') }}" class="flex-1 inline-flex items-center justify-center px-8 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-semibold">
                         Cancelar
