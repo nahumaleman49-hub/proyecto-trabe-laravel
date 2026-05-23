@@ -75,7 +75,7 @@
                 <div class="mt-8 flex gap-4">
                     <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
                         <i data-lucide="save" class="w-5 h-5"></i>
-                        {{ isset($cliente) ? 'Actualizar Cliente' : 'Guardar Cliente' }}
+                        {{ isset($cliente) ? 'Actualizar Cliente' : 'Guardar' }}
                     </button>
                     
                     <a href="{{ route('clientes') }}" class="inline-block px-8 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">

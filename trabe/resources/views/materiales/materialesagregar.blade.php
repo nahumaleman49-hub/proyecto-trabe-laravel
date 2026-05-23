@@ -13,9 +13,9 @@
     <div class="relative h-64 overflow-hidden bg-gradient-to-r from-slate-700 to-slate-800">
         <div class="absolute inset-0 flex items-center justify-center">
             <div class="text-center text-white">
-                <i data-lucide="{{ isset($material) ? 'edit' : 'package-plus' }}" class="w-16 h-16 mx-auto mb-4"></i>
-                <h1 class="text-5xl font-bold mb-2">{{ isset($material) ? 'Editar Material' : 'Nuevo Material' }}</h1>
-                <p class="text-xl text-slate-300">{{ isset($material) ? 'Modifica los detalles del producto' : 'Registra un nuevo producto en el catálogo base' }}</p>
+                <i data-lucide="{{ isset($materiales) ? 'edit' : 'package-plus' }}" class="w-16 h-16 mx-auto mb-4"></i>
+                <h1 class="text-5xl font-bold mb-2">{{ isset($materiales) ? 'Editar Material' : 'Nuevo Material' }}</h1>
+                <p class="text-xl text-slate-300">{{ isset($materiales) ? 'Modifica los detalles del producto' : 'Registra un nuevo producto en el catálogo base' }}</p>
             </div>
         </div>
     </div>
@@ -48,30 +48,30 @@
                 <i data-lucide="info" class="w-5 h-5 mr-2 text-indigo-500"></i> Información Base
             </h2>
 
-            <form action="{{ isset($material) ? route('materiales.actualizar', $material->ID_Material) : route('materiales.guardar') }}" method="POST">
+            <form action="{{ isset($materiales) ? route('materiales.actualizar', $materiales->ID_Material) : route('materiales.guardar') }}" method="POST">
                 @csrf
-                @if(isset($material))
+                @if(isset($materiales))
                     @method('PUT')
                 @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
                         <label class="block text-slate-700 font-bold mb-2">Nombre del Material *</label>
-                        <input type="text" name="nombre" value="{{ old('nombre', $material->nombre ?? '') }}" 
+                        <input type="text" name="nombre" value="{{ old('nombre', $materiales->nombre ?? '') }}" 
                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all"
                                placeholder="Ej: Cemento Gris Tolteca" required>
                     </div>
 
                     <div>
                         <label class="block text-slate-700 font-bold mb-2">Código Interno *</label>
-                        <input type="text" name="codigo" value="{{ old('codigo', $material->codigo ?? '') }}" 
+                        <input type="text" name="codigo" value="{{ old('codigo', $materiales->codigo ?? '') }}" 
                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all"
                                placeholder="Ej: CEM-001" required>
                     </div>
 
                     <div>
                         <label class="block text-slate-700 font-bold mb-2">Unidad de Medida *</label>
-                        <input type="text" name="medidas" value="{{ old('medidas', $material->medidas ?? '') }}" 
+                        <input type="text" name="medidas" value="{{ old('medidas', $materiales->medidas ?? '') }}" 
                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all"
                                placeholder="Ej: Bulto 50kg, m2, Pieza" required>
                     </div>
@@ -87,7 +87,7 @@
                             <option value="">Seleccione una opción...</option>
                             @foreach($categorias as $categoria)
                                 <option value="{{ $categoria->ID_Categoria }}" 
-                                    {{ (old('fk_id_categoria', $material->fk_id_categoria ?? '') == $categoria->ID_Categoria) ? 'selected' : '' }}>
+                                    {{ (old('fk_id_categoria', $materiales->fk_id_categoria ?? '') == $categoria->ID_Categoria) ? 'selected' : '' }}>
                                     {{ $categoria->nombre }}
                                 </option>
                             @endforeach
@@ -98,7 +98,7 @@
                 <div class="mt-8 flex flex-col sm:flex-row gap-4 pt-6">
                     <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-3 rounded-xl hover:bg-slate-900 transition-all shadow-md font-bold">
                         <i data-lucide="save" class="w-5 h-5"></i>
-                        {{ isset($material) ? 'Actualizar Información Base' : 'Guardar Material' }}
+                        {{ isset($materiales) ? 'Actualizar Información Base' : 'Guardar' }}
                     </button>
                     <a href="{{ route('materiales.index') }}" class="flex-1 inline-flex items-center justify-center px-8 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-semibold">
                         Cancelar
@@ -107,7 +107,7 @@
             </form>
         </div>
 
-        @if(isset($material))
+        @if(isset($materiales))
             <div class="bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
                 <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center border-b pb-4">
                     <i data-lucide="store" class="w-6 h-6 mr-3 text-emerald-500"></i>
@@ -116,7 +116,7 @@
 
                 <form action="{{ route('materiales.vincularProveedor') }}" method="POST" class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
                     @csrf
-                    <input type="hidden" name="fk_id_material" value="{{ $material->ID_Material }}">
+                    <input type="hidden" name="fk_id_material" value="{{ $materiales->ID_Material }}">
                     
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                         <div class="md:col-span-2">
@@ -153,7 +153,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 bg-white">
-                            @forelse($material->abastecimientos as $abastecimiento)
+                            @forelse($materiales->abastecimiento as $abastecimiento)
                                 @if($abastecimiento->proveedor) 
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="py-3 px-4 font-semibold text-slate-800 flex items-center">
@@ -163,7 +163,7 @@
                                     <td class="py-3 px-4 text-slate-600">{{ $abastecimiento->proveedor->telefono ?? 'Sin teléfono' }}</td>
                                     <td class="py-3 px-4 text-emerald-600 font-bold text-right">${{ number_format($abastecimiento->precio, 2) }}</td>
                                     <td class="py-3 px-4 text-center">
-                                        <form action="{{ route('materiales.desvincularProveedor', ['material' => $material->ID_Material, 'proveedor' => $abastecimiento->proveedor->ID_proveedor]) }}" method="POST" class="inline-block">
+                                        <form action="{{ route('materiales.desvincularProveedor', ['material' => $materiales->ID_Material, 'proveedor' => $abastecimiento->proveedor->ID_proveedor]) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" onclick="return confirm('¿Estás seguro de desvincular a este proveedor de este material?');" class="text-red-500 hover:text-red-700 transition-colors p-1 bg-red-50 hover:bg-red-100 rounded-lg" title="Desvincular">

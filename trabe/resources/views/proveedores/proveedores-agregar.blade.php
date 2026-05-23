@@ -99,7 +99,7 @@
                 <div class="mt-8 flex gap-4 border-t pt-6">
                     <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow font-semibold">
                         <i data-lucide="save" class="w-5 h-5"></i>
-                        {{ isset($proveedor) ? 'Actualizar Información' : 'Guardar Proveedor' }}
+                        {{ isset($proveedor) ? 'Actualizar' : 'Guardar' }}
                     </button>
                 </div>
             </form>

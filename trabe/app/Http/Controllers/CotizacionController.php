@@ -164,14 +164,13 @@ class CotizacionController extends Controller
 
         $materialesExistentes = $cotizacion->detallesMateriales->map(function($d) {
             return [
-                'id_detalle'        => $d->ID_det_ab,
+                'id_detalle'      => $d->ID_det_ab,
                 'abastecimiento_id' => $d->fk_id_abastecimiento,
-                'material_id'       => $d->abastecimiento->fk_id_material ?? $d->fk_id_abastecimiento,
-                'material_text'     => $d->abastecimiento->materiales->nombre ?? 'N/A',
-                'proveedor_text'    => $d->abastecimiento->proveedor->nombre ?? 'N/A',
-                'cantidad'          => $d->cantidad,
-                'precio_unitario'   => $d->abastecimiento->precio ?? 0,
-                'unidad'            => $d->abastecimiento->materiales->medidas ?? 'N/A',
+                'material_text'   => $d->abastecimiento->materiales->nombre ?? 'N/A',
+                'proveedor_text'  => $d->abastecimiento->proveedor->nombre ?? 'N/A',
+                'cantidad'        => $d->cantidad,
+                'precio_unitario' => $d->abastecimiento->precio ?? 0,
+                'unidad'          => $d->abastecimiento->materiales->medidas ?? 'N/A',
             ];
         });
 
@@ -179,7 +178,6 @@ class CotizacionController extends Controller
             return [
                 'id_detalle'      => $d->ID_detalle,
                 'mano_obra_id'    => $d->fk_id_mano_obra,
-                'servicio_id'     => $d->manoObra->fk_id_servicio ?? $d->fk_id_mano_obra,
                 'cantidad'        => $d->cantidad,
                 'precio_unitario' => $d->manoObra->precio ?? 0,
                 'servicio_text'   => $d->manoObra->servicio->nombre ?? 'N/A',
@@ -254,6 +252,31 @@ class CotizacionController extends Controller
 
     public function pdf($id)
     {
-        return redirect()->route('cotizaciones.ver', $id)->with('info', 'La generación de PDF estará disponible próximamente.');
+        $cotizacion = Cotizacion::with([
+            'proyecto.cliente',
+            'detallesMateriales.abastecimiento.materiales',
+            'detallesMateriales.abastecimiento.proveedor',
+            'detallesManoObra.manoObra.servicio',
+            'detallesManoObra.manoObra.proveedor',
+        ])->findOrFail($id);
+
+        $totalMateriales = $cotizacion->detallesMateriales->sum(function($d) {
+            return $d->cantidad * ($d->abastecimiento->precio ?? 0);
+        });
+
+        $totalServicios = $cotizacion->detallesManoObra->sum(function($d) {
+            return $d->cantidad * ($d->manoObra->precio ?? 0);
+        });
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('cotizaciones.pdf', [
+            'cotizacion'      => $cotizacion,
+            'totalMateriales' => $totalMateriales,
+            'totalServicios'  => $totalServicios,
+        ]);
+
+        $pdf->setPaper('letter', 'portrait');
+
+        $nombreArchivo = 'cotizacion-' . $cotizacion->ID_cotizacion . '.pdf';
+        return $pdf->download($nombreArchivo);
     }
 }

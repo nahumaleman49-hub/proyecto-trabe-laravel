@@ -54,7 +54,7 @@
                 <div class="lg:pt-7">
                     <a href="{{ route('proveedores.crear') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-0.5 w-full justify-center">
                         <i data-lucide="plus" class="w-5 h-5"></i>
-                        Nuevo Proveedor
+                        Agregar
                     </a>
                 </div>
             </div>

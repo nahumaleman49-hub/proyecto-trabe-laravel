@@ -39,11 +39,11 @@
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Agregar Nueva Categoría</h2>
-                    <p class="text-slate-600 text-lg">Crea una nueva clasificación para tu inventario</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Nueva Categoría</h2>
+                    <p class="text-slate-600 text-lg">Crea una clasificación para tu inventario</p>
                 </div>
                 <a href="{{ route('categorias.agregar') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-shadow">
-                    <i data-lucide="plus" class="w-5 h-5"></i> Nueva Categoría
+                    <i data-lucide="plus" class="w-5 h-5"></i> Agregar
                 </a>
             </div>
         </div>

@@ -137,7 +137,7 @@
                                     <p class="text-[10px] text-slate-400 uppercase">{{ $det->abastecimiento->materiales->medidas ?? 'Sin medidas' }}</p>
                                 </td>
                                 <td class="py-4 px-4 text-slate-500 font-medium">{{ $det->abastecimiento->proveedor->nombre?? 'N/A' }}</td>
-                                <td class="py-4 px-4 text-center font-mono font-bold">{{ number_format($det->cantidad * ($det->abastecimiento->precio ?? 0), 2) }}</td>
+                                <td class="py-4 px-4 text-center font-mono font-bold">{{ number_format($det->cantidad, 2) }}</td>
                                 <td class="py-4 px-4 text-right text-slate-400 font-mono">${{ number_format($det->abastecimiento-> precio ?? 0, 2) }}</td>
                                 <td class="py-4 px-4 text-right font-black text-slate-700 font-mono">${{ number_format($det->cantidad * ( $det->abastecimiento->precio ?? 0), 2) }}</td>
                             </tr>

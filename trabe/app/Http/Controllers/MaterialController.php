@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\materiales as Material;
+use App\Models\materiales as materiales;
 use App\Models\categoria as Categoria;
 use App\Models\proveedores as proveedor; 
 use App\Models\abastecimiento as abastecimiento;
@@ -17,7 +17,7 @@ class MaterialController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Material::with(['categoria', 'abastecimiento.proveedor']);
+        $query = materiales::with(['categoria', 'abastecimiento.proveedor']);
 
         if ($request->has('buscar') && $request->buscar != '') {
             $termino = $request->buscar;
@@ -53,7 +53,7 @@ class MaterialController extends Controller
         ]);
 
         try {
-            Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
+            materiales::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
             return redirect()->route('materiales.index')->with('success', 'Material creado exitosamente.');
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => 'Ocurrió un error al guardar: ' . $e->getMessage()]);
@@ -65,11 +65,11 @@ class MaterialController extends Controller
      */
     public function editar($id)
     {
-        $material = Material::with('abastecimiento.proveedor')->findOrFail($id);
+        $materiales = materiales::with('abastecimiento.proveedor')->findOrFail($id);
         $categorias = Categoria::all();
-        $proveedores = proveedores::whereIn('tipo', ['Materiales', 'Ambos'])->get();
+        $proveedor = proveedor::whereIn('tipo', ['Materiales', 'Ambos'])->get();
         
-        return view('materiales.materialesagregar', compact('material', 'categorias', 'proveedor'));
+        return view('materiales.materialesagregar', compact('materiales', 'categorias', 'proveedor'));
     }
 
     /**
@@ -85,8 +85,8 @@ class MaterialController extends Controller
         ]);
 
         try {
-            $material = Material::findOrFail($id);
-            $material->update($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
+            $materiales = materiales::findOrFail($id);
+            $materiales->update($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria'])); 
             return redirect()->route('materiales.index')->with('success', 'Material actualizado correctamente.');
         } catch (Exception $e) {
             return back()->withInput()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
@@ -100,9 +100,9 @@ class MaterialController extends Controller
     {
         try {
             DB::beginTransaction();
-            $material = Material::findOrFail($id);
+            $materiales = materiales::findOrFail($id);
             abastecimiento::where('fk_id_material', $id)->delete();
-            $material->delete();
+            $materiales->delete();
             DB::commit();
             return redirect()->route('materiales.index')->with('success', 'Material eliminado correctamente.');
         } catch (Exception $e) {
@@ -162,7 +162,7 @@ class MaterialController extends Controller
                     $precio = (float)trim($data[4]);
 
                     // 1. Buscar el material por código o crearlo si no existe
-                    $material = Material::updateOrCreate(
+                    $materiales = materiales::updateOrCreate(
                         ['codigo' => $codigo],
                         [
                             'nombre' => $nombre,
@@ -175,7 +175,7 @@ class MaterialController extends Controller
                     // CORRECCIÓN: Se quita 'unidad' para evitar SQLSTATE[42S22]
                     DB::table('abastecimiento')->updateOrInsert(
                         [
-                            'fk_id_material' => $material->ID_Material,
+                            'fk_id_material' => $materiales->ID_Material,
                             'fk_id_proveedor' => $request->fk_id_proveedor
                         ],
                         [
@@ -212,13 +212,13 @@ class MaterialController extends Controller
                 'fk_id_categoria' => 'required|exists:categoria,ID_Categoria',
             ]);
 
-            $material = Material::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria']));
+            $material = materiales::create($request->only(['nombre', 'codigo', 'medidas', 'fk_id_categoria']));
 
             return response()->json([
                 'success' => true,
                 'material' => [
-                    'id' => $material->ID_Material, 
-                    'nombre' => $material->nombre
+                    'id' => $materiales->ID_Material, 
+                    'nombre' => $materiales->nombre
                 ],
                 'mensaje' => 'Material creado correctamente'
             ]);
