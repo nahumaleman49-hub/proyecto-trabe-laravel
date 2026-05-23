@@ -10,7 +10,8 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\AjaxController;
-
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UsersController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,13 +22,25 @@ use App\Http\Controllers\AjaxController;
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('/perfil', [LoginController::class, 'perfil'])->name('perfil');
-Route::put('/perfil', [LoginController::class, 'actualizarPerfil'])->name('perfil.actualizar');
 
 Route::middleware('auth')->group(function () {
-    // home page
+    // home page del admin y dashboard del usuario normal
     Route::get('/home', function () { return view('home'); })->name('home');
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Gestión de usuarios (solo admin)
+    Route::prefix('admin')->middleware('can:admin')->group(function () {
+        Route::resource('usuarios', UsuariosController::class)->except(['show']);
+    });
+    Route::get('/usuarios', [UsersController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/crear', [UsersController::class, 'create'])->name('usuarios.create');
+    Route::post('/usuarios', [UsersController::class, 'store'])->name('usuarios.store');
+    Route::get('/usuarios/{id}/editar', [UsersController::class, 'edit'])->name('usuarios.edit');
+    Route::put('/usuarios/{id}', [UsersController::class, 'update'])->name('usuarios.update');
+    Route::delete('/usuarios/{id}', [UsersController::class, 'destroy'])->name('usuarios.destroy');
+    //Perfil del usuario
+    Route::get('/perfil', [LoginController::class, 'perfil'])->name('perfil');
+    Route::put('/perfil', [LoginController::class, 'actualizarPerfil'])->name('perfil.actualizar');
+    Route::get('/perfil/user', [LoginController::class, 'perfilUser'])->name('perfil.user');
     // Cotizaciones
     Route::get('/cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones');
     Route::get('/cotizaciones/nueva', [CotizacionController::class, 'create'])->name('cotizaciones.nueva');
@@ -36,7 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/cotizaciones/{id}/editar', [CotizacionController::class, 'edit'])->name('cotizaciones.editar');
     Route::put('/cotizaciones/{id}', [CotizacionController::class, 'update'])->name('cotizaciones.actualizar');
     Route::get('/cotizaciones/{id}/pdf', [CotizacionController::class, 'pdf'])->name('cotizaciones.pdf');
-
     // Endpoints AJAX para los selects dinámicos (Vinculados a AjaxController)
     Route::prefix('ajax')->group(function () {
         Route::get('/clientes', [AjaxController::class, 'clientes']); 
@@ -47,7 +59,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/servicios-por-categoria/{id}', [AjaxController::class, 'serviciosPorCategoria']);
         Route::get('/proveedores-por-servicio/{id}', [AjaxController::class, 'proveedoresPorServicio']);
     });
-
     // Rutas de proveedores
     Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores');
     Route::get('/proveedores/crear', [ProveedorController::class, 'crear'])->name('proveedores.crear');
@@ -55,15 +66,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/proveedores/{id}/editar', [ProveedorController::class, 'editar'])->name('proveedores.editar');
     Route::put('/proveedores/{id}', [ProveedorController::class, 'actualizar'])->name('proveedores.actualizar');
     Route::delete('/proveedores/{id}', [ProveedorController::class, 'eliminar'])->name('proveedores.eliminar');
-    
     // Vinculación Proveedores -> Materiales
     Route::post('/proveedores/vincular-material', [ProveedorController::class, 'vincularMaterial'])->name('proveedores.vincularMaterial');
-    Route::delete('/proveedores/desvincular-material/{proveedor}/{material}', [ProveedorController::class, 'desvincularMaterial'])->name('proveedores.desvincularMaterial');
-    
+    Route::delete('/proveedores/desvincular-material/{proveedor}/{material}', [ProveedorController::class, 'desvincularMaterial'])->name('proveedores.desvincularMaterial');    
     // Vinculación Proveedores -> Servicios
     Route::post('/proveedores/vincular-servicio', [ProveedorController::class, 'vincularServicio'])->name('proveedores.vincularServicio');
     Route::delete('/proveedores/desvincular-servicio/{proveedor}/{servicio}', [ProveedorController::class, 'desvincularServicio'])->name('proveedores.desvincularServicio');
-
     // Mano de Obra (Servicios)
     Route::get('/mano-de-obra', [ServicioController::class, 'index'])->name('mano.de.obra');
     Route::get('/mano-de-obra/agregar', [ServicioController::class, 'agregar'])->name('mano.de.obra.agregar');
@@ -73,7 +81,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/mano-de-obra/{id}', [ServicioController::class, 'eliminar'])->name('mano.de.obra.eliminar');
     Route::post('/mano-de-obra/vincular-proveedor', [ServicioController::class, 'vincularProveedor'])->name('mano.de.obra.vincularProveedor');
     Route::delete('/mano-de-obra/desvincular-proveedor/{servicio}/{proveedor}', [ServicioController::class, 'desvincularProveedor'])->name('mano.de.obra.desvincularProveedor');
-
     // Módulo de Clientes
     Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes');
     Route::get('/clientes/agregar', [ClienteController::class, 'agregar'])->name('clientes.agregar');
@@ -81,7 +88,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/{id}/modificar', [ClienteController::class, 'editar'])->name('clientes.modificar');
     Route::put('/clientes/{id}', [ClienteController::class, 'actualizar'])->name('clientes.actualizar');
     Route::delete('/clientes/{id}', [ClienteController::class, 'eliminar'])->name('clientes.eliminar');
-
     // Módulo de Proyectos
     Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos');
     Route::get('/proyectos/agregar', [ProyectoController::class, 'agregar'])->name('proyectos.agregar');
@@ -89,7 +95,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/proyectos/{id}/modificar', [ProyectoController::class, 'editar'])->name('proyectos.modificar');
     Route::put('/proyectos/{id}', [ProyectoController::class, 'actualizar'])->name('proyectos.actualizar');
     Route::delete('/proyectos/{id}', [ProyectoController::class, 'eliminar'])->name('proyectos.eliminar');
-
     // Módulo de Categorías
     Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
     Route::get('/categorias/agregar', [CategoriaController::class, 'agregar'])->name('categorias.agregar');
@@ -97,7 +102,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/categorias/editar/{id}', [CategoriaController::class, 'editar'])->name('categorias.editar');
     Route::put('/categorias/actualizar/{id}', [CategoriaController::class, 'actualizar'])->name('categorias.actualizar');
     Route::delete('/categorias/eliminar/{id}', [CategoriaController::class, 'eliminar'])->name('categorias.eliminar');
-
     // Módulo de Materiales
     Route::get('/materiales', [MaterialController::class, 'index'])->name('materiales.index');
     Route::get('/materiales/agregar', [MaterialController::class, 'agregar'])->name('materiales.agregar');
@@ -109,4 +113,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/materiales/guardar-rapido', [MaterialController::class, 'guardarRapido'])->name('materiales.guardarRapido');
     Route::post('/materiales/vincular-proveedor', [MaterialController::class, 'vincularProveedor'])->name('materiales.vincularProveedor');
     Route::delete('/materiales/desvincular-proveedor/{material}/{proveedor}', [MaterialController::class, 'desvincularProveedor'])->name('materiales.desvincularProveedor');
+   
 });

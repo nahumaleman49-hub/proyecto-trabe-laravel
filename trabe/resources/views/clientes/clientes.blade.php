@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -24,9 +24,9 @@
     </div>
 
     <div class="container mx-auto px-4 py-8">
-        <a href="{{ route('home') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
+        <a href="{{ auth()->user()->isAdmin() ? route('home') : route('dashboard') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-            Volver al Inicio
+            Volver {{ auth()->user()->isAdmin() ? 'al Inicio' : 'al Dashboard' }}
         </a>
 
         @if(session('success'))
@@ -105,13 +105,16 @@
                            class="flex-1 bg-white border border-slate-200 text-slate-700 py-2 rounded-lg text-center text-sm font-bold hover:bg-slate-100 transition-colors">
                             Gestionar
                         </a>
-                        <form action="{{ route('clientes.eliminar', $cliente->ID_cliente) }}" method="POST" onsubmit="return confirm('¿Eliminar cliente y sus datos asociados?')" class="flex-shrink-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                <i data-lucide="trash-2" class="w-5 h-5"></i>
-                            </button>
-                        </form>
+                        @if(auth()->user()->isAdmin())
+                            <form action="{{ route('clientes.eliminar', $cliente->ID_cliente) }}" method="POST">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-700">
+                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                </button>
+                            </form>
+                        @else
+                             <!-- o simplemente no mostrar nada -->
+                        @endif
                     </div>
                 </div>
             @empty

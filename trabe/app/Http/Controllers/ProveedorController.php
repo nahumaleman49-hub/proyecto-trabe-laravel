@@ -41,7 +41,7 @@ class ProveedorController extends Controller
 
         return redirect()->route('proveedores')->with('success', 'Proveedor creado correctamente.');
     }
-
+    
     public function editar($id)
     {
         $proveedor = Proveedor::with(['abastecimiento.materiales', 'manoObra.servicio'])->findOrFail($id);

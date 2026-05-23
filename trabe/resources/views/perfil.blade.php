@@ -21,7 +21,7 @@
     </div>
 
     <div class="container mx-auto px-4 py-8 max-w-2xl">
-        <a href="{{ route('home') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
+        <a href="{{ auth()->user()->isAdmin() ? route('home') : route('dashboard') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
             Volver al Inicio
         </a>

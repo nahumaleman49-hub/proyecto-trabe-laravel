@@ -15,7 +15,7 @@ class ClienteController extends Controller
         $clientes = Cliente::withCount('proyectos')->get(); 
         return view('clientes.clientes', compact('clientes'));
     }
-
+    
     public function agregar()
     {
         return view('clientes.clientesagregar');

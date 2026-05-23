@@ -43,7 +43,7 @@ class ProyectoController extends Controller
 
         return redirect()->route('proyectos')->with('success', 'Proyecto agregado correctamente.');
     }
-
+    
     public function editar($id)
     {
         $proyecto = Proyecto::findOrFail($id);
