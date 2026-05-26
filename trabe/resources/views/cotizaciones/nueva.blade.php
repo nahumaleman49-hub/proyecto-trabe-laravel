@@ -243,7 +243,7 @@
                             @foreach($materialesExistentes as $mat)
                             <tr class="existing-material-row"
                                 data-abastecimiento-id="{{ $mat['abastecimiento_id'] }}"
-                                data-material-id="{{ $mat['material_id'] ?? $mat['abastecimiento_id'] }}"
+                                data-material-id="{{ $mat['material_id'] }}"
                                 data-cantidad="{{ $mat['cantidad'] }}"
                                 data-precio="{{ $mat['precio_unitario'] }}"
                                 data-material-text="{{ $mat['material_text'] }}"
@@ -490,7 +490,7 @@ async function abrirModalMaterial(fila) {
     // Si no está disponible, usamos el endpoint de proveedores-por-material con el
     // campo data-material-id que agregamos al <tr>.
     try {
-        const matId = ds.materialId || ds.abastecimientoId; // ver nota en controller
+        const matId = ds.materialId; // ver nota en controller
         const provs = await fetchJSON(`/ajax/proveedores-por-material/${matId}`);
         modalMatLoading.classList.add('hidden');
         llenarSelect(
@@ -971,45 +971,52 @@ function actualizarTotalesGenerales() {
 document.getElementById('cotizacionForm').addEventListener('submit', function () {
     const materiales = [];
 
+    // 1. Materiales existentes (tabla con clase existing-material-row)
     document.querySelectorAll('.existing-material-row').forEach(row => {
         materiales.push({
             abastecimiento_id: row.dataset.abastecimientoId,
-            cantidad:          row.dataset.cantidad
+            cantidad: row.dataset.cantidad
         });
     });
 
+    // 2. Materiales nuevos (filas dinámicas)
     document.querySelectorAll('.material-item').forEach(row => {
         const provSelect = row.querySelector('.proveedor-select');
         const cantidad   = row.querySelector('.cantidad-material').value;
-        if (provSelect.value) {
-            materiales.push({ abastecimiento_id: provSelect.value, cantidad });
+        if (provSelect && provSelect.value) {
+            materiales.push({
+                abastecimiento_id: provSelect.value,
+                cantidad: cantidad
+            });
         }
     });
 
     const servicios = [];
 
+    // 3. Servicios existentes (tabla con clase existing-servicio-row)
     document.querySelectorAll('.existing-servicio-row').forEach(row => {
         servicios.push({
-            mano_obra_id:    row.dataset.manoObraId,
-            cantidad:        row.dataset.cantidad,
+            mano_obra_id: row.dataset.manoObraId,
+            cantidad: row.dataset.cantidad,
             precio_unitario: row.dataset.precio
         });
     });
 
+    // 4. Servicios nuevos (filas dinámicas)
     document.querySelectorAll('.servicio-item').forEach(row => {
         const provSelect = row.querySelector('.prov-servicio-select');
         const cantidad   = row.querySelector('.cantidad-servicio').value;
-        if (provSelect.value) {
+        if (provSelect && provSelect.value) {
             servicios.push({
-                mano_obra_id:    provSelect.value,
-                cantidad,
-                precio_unitario: provSelect.options[provSelect.selectedIndex].dataset.precio
+                mano_obra_id: provSelect.value,
+                cantidad: cantidad,
+                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio || 0
             });
         }
     });
 
     document.getElementById('materiales_json').value = JSON.stringify(materiales);
-    document.getElementById('servicios_json').value  = JSON.stringify(servicios);
+    document.getElementById('servicios_json').value = JSON.stringify(servicios);
 });
 
 // Calcular totales iniciales (incluye las filas estáticas ya renderizadas)

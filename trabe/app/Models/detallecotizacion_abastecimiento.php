@@ -31,14 +31,49 @@ class detallecotizacion_abastecimiento extends Model
 
     public $timestamps = false;
 
-    public function abastecimiento()
-    {
-        return $this->belongsTo(abastecimiento::class, 'fk_id_abastecimiento', 'ID_prod');
-    }
-
     public function cotizacion()
     {
-        return $this->belongsTo(cotizacion::class, 'fk_id_cotizacion', 'ID_cotizacion');
-        
+        return $this->belongsTo(Cotizacion::class, 'fk_id_cotizacion', 'ID_cotizacion');
+    }
+
+    // Relación con el abastecimiento (que contiene material, proveedor y precio)
+    public function abastecimiento()
+    {
+        return $this->belongsTo(Abastecimiento::class, 'fk_id_abastecimiento', 'ID_prod');
+    }
+
+    // Accesor para obtener el material a través del abastecimiento (opcional)
+    public function getMaterialAttribute()
+    {
+        return $this->abastecimiento ? $this->abastecimiento->materiales : null;
+    }
+
+    // Accesor para obtener el proveedor a través del abastecimiento (opcional)
+    public function getProveedorAttribute()
+    {
+        return $this->abastecimiento ? $this->abastecimiento->proveedor : null;
+    }
+
+    public function material()
+    {
+        return $this->hasOneThrough(
+            materiales::class,
+            abastecimiento::class,
+            'ID_prod', // Foreign key on abastecimiento table
+            'ID_Material', // Foreign key on Material table
+            'fk_id_abastecimiento', // Local key on detallecotizacion_abastecimiento table
+            'fk_id_material' // Local key on abastecimiento table
+        );
+    }
+    public function proveedor()
+    {
+        return $this->hasOneThrough(
+            proveedores::class,
+            abastecimiento::class,
+            'ID_prod', // Foreign key on abastecimiento table
+            'ID_proveedor', // Foreign key on Proveedor table
+            'fk_id_abastecimiento', // Local key on detallecotizacion_abastecimiento table
+            'fk_id_proveedor' // Local key on abastecimiento table
+        );
     }
 }
