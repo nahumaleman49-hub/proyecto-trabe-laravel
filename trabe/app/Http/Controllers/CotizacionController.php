@@ -29,7 +29,8 @@ class CotizacionController extends Controller
         $clientes = Cliente::all();
         $categoriasMateriales = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
         $categoriasServicios = Categoria::whereHas('servicios')->get(['ID_Categoria as id', 'nombre as text']);
-        return view('cotizaciones.nueva', compact('clientes', 'categoriasMateriales', 'categoriasServicios'));
+        $proyectos = Proyecto::with('cliente')->get(); // ← nueva línea
+        return view('cotizaciones.nueva', compact('clientes', 'categoriasMateriales', 'categoriasServicios', 'proyectos'));
     }
 
     public function getMateriales($categoria_id) {
@@ -84,21 +85,26 @@ class CotizacionController extends Controller
 {
     try {
         DB::beginTransaction();
-
-        // Crear proyecto
-        $proyecto = Proyecto::create([
-            'nombre'        => $request->nombre_proyecto,
-            'fk_id_cliente' => $request->cliente_id,
-            'estado'        => 1,
-            'fecha_ini'     => now(),
-            'presupuesto'   => 0,
-        ]);
+        //con proyecto existente
+        if ($request->filled('proyecto_id')) {
+            $proyecto = Proyecto::findOrFail($request->proyecto_id);
+            // Opcional: actualizar datos si cambian (nombre, cliente)
+        } else {
+            // Crear proyecto
+            $proyecto = Proyecto::create([
+                'nombre'        => $request->nombre_proyecto,
+                'fk_id_cliente' => $request->cliente_id,
+                'estado'        => 1,
+                'fecha_ini'     => now(),
+                'presupuesto'   => 0,
+            ]);
+        }
 
         // Crear cotización
         $cotizacion = Cotizacion::create([
             'fk_id_proyecto' => $proyecto->ID_proyecto,
             'fecha'          => now(),
-            'estado'         => 0,
+            'estado'         => $request->estado ?? 0,
             'total'          => 0,
         ]);
 
@@ -206,7 +212,7 @@ $serviciosExistentes = $cotizacion->detallesManoObra->map(function($d) {
         'mano_obra_id'    => $d->fk_id_mano_obra,
         'servicio_id'     => $d->manoObra->fk_id_servicio ?? null,   // ✅ NUEVO
         'cantidad'        => $d->cantidad,
-        'precio_unitario' => $d->precio_unit ?? 0,
+        'precio_unitario' => $d->precio_unit ?? ($d->manoObra->precio ?? 0),
         'servicio_text'   => $d->manoObra->servicio->nombre ?? 'N/A',
         'proveedor_text'  => $d->manoObra->proveedor->nombre ?? 'N/A',
         'unidad'          => $d->manoObra->unidad ?? 'N/A',
@@ -216,10 +222,11 @@ $serviciosExistentes = $cotizacion->detallesManoObra->map(function($d) {
         $clientes = Cliente::all();
         $categoriasMateriales = Categoria::whereHas('materiales')->get(['ID_Categoria as id', 'nombre as text']);
         $categoriasServicios = Categoria::whereHas('servicios')->get(['ID_Categoria as id', 'nombre as text']);
+        $proyectos = Proyecto::with('cliente')->get();
 
         return view('cotizaciones.nueva', compact(
             'cotizacion', 'clientes', 'categoriasMateriales', 'categoriasServicios',
-            'materialesExistentes', 'serviciosExistentes'
+            'materialesExistentes', 'serviciosExistentes', 'proyectos'
         ));
     }
 
@@ -283,6 +290,7 @@ $serviciosExistentes = $cotizacion->detallesManoObra->map(function($d) {
             'costo_equipo'     => $costoEquipo,
             'gastos_generales' => $gastosPerc,
             'margen_ganancia'  => $margenPerc,
+            'estado'           => $request->estado ?? 0,
         ]);
         $cotizacion->proyecto->update(['presupuesto' => $totalFinal]);
 
