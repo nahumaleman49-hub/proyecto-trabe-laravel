@@ -198,10 +198,10 @@
             padding: 0;
         }
 
-        .spacer { width: 55%; }
 
         .totales-box {
-            width: 45%;
+            width: 100%;
+            margin-left: auto;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
