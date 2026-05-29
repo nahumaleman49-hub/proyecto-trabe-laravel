@@ -16,7 +16,6 @@ class LoginController extends Controller
         return view('login');
     }
 
-    // Procesar login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -24,14 +23,19 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Intentar autenticar usando el campo 'name' (no 'email')
         if (Auth::attempt(['name' => $credentials['name'], 'password' => $credentials['password']], $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('home'));
+
+            $user = Auth::user();
+            if ($user->isAdmin()) {
+                return redirect()->intended(route('home'));
+            } else {
+                return redirect()->intended(route('dashboard'));
+            }
         }
 
         return back()->withErrors([
-            'name' => 'Las credenciales no coinciden con nuestros registros.',
+            'name' => 'Las credenciales no coinciden.',
         ])->onlyInput('name');
     }
 
@@ -48,6 +52,10 @@ class LoginController extends Controller
     public function perfil()
     {
         return view('perfil');
+    }
+
+    public function perfilUser(){
+        return view('perfilUser');
     }
 
     // Método para actualizar perfil

@@ -182,12 +182,49 @@
         =============================================================== --}}
         <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
             <h2 class="text-2xl font-bold mb-4">Proyecto y Cliente</h2>
+
+            {{-- Checkbox --}}
+            <div class="mb-4">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="usarProyectoExistente" class="rounded border-slate-300 text-slate-600 shadow-sm focus:ring-slate-500">
+                    <input type="hidden" name="proyecto_id" id="proyecto_id">
+                    <span class="ml-2 text-sm text-slate-700">Usar proyecto existente</span>
+                </label>
+            </div>
+            <div>
+                <label class="block font-semibold mb-2">Estado de la Cotización</label>
+                <select name="estado" id="estado" class="w-full border rounded-lg px-4 py-2">
+                    <option value="0" {{ (old('estado', $cotizacion->estado ?? 0) == 0) ? 'selected' : '' }}>Borrador</option>
+                    <option value="1" {{ (old('estado', $cotizacion->estado ?? 0) == 1) ? 'selected' : '' }}>Enviada</option>
+                    <option value="2" {{ (old('estado', $cotizacion->estado ?? 0) == 2) ? 'selected' : '' }}>Aprobada</option>
+                    <option value="3" {{ (old('estado', $cotizacion->estado ?? 0) == 3) ? 'selected' : '' }}>Rechazada</option>
+                </select>
+            </div>
+
+            {{-- Select de proyectos (oculto inicialmente) --}}
+            <div id="proyectoSelectContainer" class="mb-4 hidden">
+                <label class="block font-semibold mb-2">Selecciona un proyecto</label>
+                <select id="proyectoSelect" class="w-full border rounded-lg px-4 py-2">
+                    <option value="">-- Seleccione un proyecto --</option>
+                    @foreach($proyectos as $proyecto)
+                        <option value="{{ $proyecto->ID_proyecto }}"
+                                data-cliente-id="{{ $proyecto->fk_id_cliente }}"
+                                data-cliente-nombre="{{ $proyecto->cliente->nombre ?? '' }}"
+                                data-cliente-telefono="{{ $proyecto->cliente->telefono ?? '' }}"
+                                data-cliente-email="{{ $proyecto->cliente->email ?? '' }}">
+                            {{ $proyecto->nombre }} ({{ $proyecto->cliente->nombre ?? 'Sin cliente' }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Campos del proyecto/cliente --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block font-semibold mb-2">Nombre del Proyecto *</label>
                     <input type="text" name="nombre_proyecto" id="nombre_proyecto" required
-                           class="w-full border rounded-lg px-4 py-2"
-                           value="{{ old('nombre_proyecto', $cotizacion->proyecto->nombre ?? '') }}">
+                        class="w-full border rounded-lg px-4 py-2"
+                        value="{{ old('nombre_proyecto', $cotizacion->proyecto->nombre ?? '') }}">
                 </div>
                 <div>
                     <label class="block font-semibold mb-2">Cliente *</label>
@@ -210,7 +247,9 @@
                     <input type="email" id="email" readonly class="w-full border rounded-lg bg-gray-100 px-4 py-2">
                 </div>
             </div>
-        </div>
+        </div>  
+    </div>
+</div>
 
         {{-- ============================================================
              2. MATERIALES
@@ -243,7 +282,7 @@
                             @foreach($materialesExistentes as $mat)
                             <tr class="existing-material-row"
                                 data-abastecimiento-id="{{ $mat['abastecimiento_id'] }}"
-                                data-material-id="{{ $mat['material_id'] ?? $mat['abastecimiento_id'] }}"
+                                data-material-id="{{ $mat['material_id'] }}"
                                 data-cantidad="{{ $mat['cantidad'] }}"
                                 data-precio="{{ $mat['precio_unitario'] }}"
                                 data-material-text="{{ $mat['material_text'] }}"
@@ -396,30 +435,100 @@
 </div>
 
 <script>
-lucide.createIcons();
+    lucide.createIcons();
+    //============================================================
+    //                  Variables globales
+    //=============================================================
+    const clienteSelect = document.getElementById('cliente_id');
+    const telefonoInput = document.getElementById('telefono');
+    const emailInput   = document.getElementById('email');
+    const chkUsarProyecto = document.getElementById('usarProyectoExistente');
+    const proyectoSelectContainer = document.getElementById('proyectoSelectContainer');
+    const proyectoSelect = document.getElementById('proyectoSelect');
+    const nombreProyectoInput = document.getElementById('nombre_proyecto');
+    
+    const clientesData = {!! json_encode($clientes->map(fn($c) => [
+        'id'       => $c->ID_cliente,
+        'telefono' => $c->telefono,
+        'email'   => $c->email ?? ''
+    ])->values()) !!};
+    
+    const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
+    const categoriasServicios  = {!! json_encode($categoriasServicios) !!};
 
+//=================================================================
+//                      EVENTOS
+//=================================================================
+// ================================================================
+//  PRECARGA EN MODO EDICIÓN (si existe cotización con proyecto)
+// ================================================================
+@if(isset($cotizacion) && $cotizacion->proyecto)
+    const proyectoActualId = {{ $cotizacion->proyecto->ID_proyecto }};
+    // Marcar checkbox
+    chkUsarProyecto.checked = true;
+    // Mostrar contenedor del select
+    proyectoSelectContainer.classList.remove('hidden');
+    // Seleccionar la opción correspondiente
+    proyectoSelect.value = proyectoActualId;
+    // Forzar el evento change para llenar los campos
+    proyectoSelect.dispatchEvent(new Event('change'));
+    // Deshabilitar campos de proyecto y cliente como si se hubiera marcado el checkbox
+    nombreProyectoInput.disabled = true;
+    clienteSelect.disabled = true;
+@endif
 // ================================================================
 //  CLIENTE — autocompletar teléfono / correo
 // ================================================================
-const clienteSelect = document.getElementById('cliente_id');
-const telefonoInput = document.getElementById('telefono');
-const emailInput   = document.getElementById('email');
+if (clienteSelect) {
+    clienteSelect.addEventListener('change', function () {
+        const sel = clientesData.find(c => c.id == this.value);
+        telefonoInput.value = sel?.telefono || '';
+        emailInput.value   = sel?.email   || '';
+    });
+    if (clienteSelect.value) clienteSelect.dispatchEvent(new Event('change'));
+}
 
-const clientesData = {!! json_encode($clientes->map(fn($c) => [
-    'id'       => $c->ID_cliente,
-    'telefono' => $c->telefono,
-    'email'   => $c->email ?? ''
-])->values()) !!};
+// ================================================================
+//  PROYECTO EXISTENTE
+// ================================================================
 
-const categoriasMateriales = {!! json_encode($categoriasMateriales) !!};
-const categoriasServicios  = {!! json_encode($categoriasServicios) !!};
+if (chkUsarProyecto) {
+    chkUsarProyecto.addEventListener('change', function() {
+        if (this.checked) {
+            proyectoSelectContainer.classList.remove('hidden');
+            nombreProyectoInput.disabled = true;
+            clienteSelect.disabled = true;
+        } else {
+            proyectoSelectContainer.classList.add('hidden');
+            nombreProyectoInput.disabled = false;
+            clienteSelect.disabled = false;
+            proyectoSelect.value = '';
+            nombreProyectoInput.value = '';
+            clienteSelect.value = '';
+            telefonoInput.value = '';
+            emailInput.value = '';
+        }
+    });
+}
 
-clienteSelect.addEventListener('change', function () {
-    const sel = clientesData.find(c => c.id == this.value);
-    telefonoInput.value = sel?.telefono || '';
-    emailInput.value   = sel?.email   || '';
-});
-if (clienteSelect.value) clienteSelect.dispatchEvent(new Event('change'));
+if (proyectoSelect) {
+    proyectoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const proyectoNombre = selectedOption.text.split(' (')[0];
+        const clienteId = selectedOption.dataset.clienteId;
+        const clienteTelefono = selectedOption.dataset.clienteTelefono;
+        const clienteEmail = selectedOption.dataset.clienteEmail;
+
+        if (clienteId) {
+            nombreProyectoInput.value = proyectoNombre;
+            clienteSelect.value = clienteId;
+            telefonoInput.value = clienteTelefono || '';
+            emailInput.value = clienteEmail || '';
+            clienteSelect.dispatchEvent(new Event('change'));
+        }
+    });
+}
+
 
 // ================================================================
 //  HELPERS
@@ -490,7 +599,7 @@ async function abrirModalMaterial(fila) {
     // Si no está disponible, usamos el endpoint de proveedores-por-material con el
     // campo data-material-id que agregamos al <tr>.
     try {
-        const matId = ds.materialId || ds.abastecimientoId; // ver nota en controller
+        const matId = ds.materialId; // ver nota en controller
         const provs = await fetchJSON(`/ajax/proveedores-por-material/${matId}`);
         modalMatLoading.classList.add('hidden');
         llenarSelect(
@@ -970,46 +1079,55 @@ function actualizarTotalesGenerales() {
 // ================================================================
 document.getElementById('cotizacionForm').addEventListener('submit', function () {
     const materiales = [];
+    nombreProyectoInput.disabled = false;
+    clienteSelect.disabled = false;
 
+    // 1. Materiales existentes (tabla con clase existing-material-row)
     document.querySelectorAll('.existing-material-row').forEach(row => {
         materiales.push({
             abastecimiento_id: row.dataset.abastecimientoId,
-            cantidad:          row.dataset.cantidad
+            cantidad: row.dataset.cantidad
         });
     });
 
+    // 2. Materiales nuevos (filas dinámicas)
     document.querySelectorAll('.material-item').forEach(row => {
         const provSelect = row.querySelector('.proveedor-select');
         const cantidad   = row.querySelector('.cantidad-material').value;
-        if (provSelect.value) {
-            materiales.push({ abastecimiento_id: provSelect.value, cantidad });
+        if (provSelect && provSelect.value) {
+            materiales.push({
+                abastecimiento_id: provSelect.value,
+                cantidad: cantidad
+            });
         }
     });
 
     const servicios = [];
 
+    // 3. Servicios existentes (tabla con clase existing-servicio-row)
     document.querySelectorAll('.existing-servicio-row').forEach(row => {
         servicios.push({
-            mano_obra_id:    row.dataset.manoObraId,
-            cantidad:        row.dataset.cantidad,
+            mano_obra_id: row.dataset.manoObraId,
+            cantidad: row.dataset.cantidad,
             precio_unitario: row.dataset.precio
         });
     });
 
+    // 4. Servicios nuevos (filas dinámicas)
     document.querySelectorAll('.servicio-item').forEach(row => {
         const provSelect = row.querySelector('.prov-servicio-select');
         const cantidad   = row.querySelector('.cantidad-servicio').value;
-        if (provSelect.value) {
+        if (provSelect && provSelect.value) {
             servicios.push({
-                mano_obra_id:    provSelect.value,
-                cantidad,
-                precio_unitario: provSelect.options[provSelect.selectedIndex].dataset.precio
+                mano_obra_id: provSelect.value,
+                cantidad: cantidad,
+                precio_unitario: provSelect.options[provSelect.selectedIndex]?.dataset?.precio || 0
             });
         }
     });
 
     document.getElementById('materiales_json').value = JSON.stringify(materiales);
-    document.getElementById('servicios_json').value  = JSON.stringify(servicios);
+    document.getElementById('servicios_json').value = JSON.stringify(servicios);
 });
 
 // Calcular totales iniciales (incluye las filas estáticas ya renderizadas)

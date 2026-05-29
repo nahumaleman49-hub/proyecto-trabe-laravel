@@ -34,6 +34,20 @@
 
             {{-- Grid de botones / tarjetas --}}
             <div class="buttons-grid">
+                {{-- Usuarios --}}
+                <a href="{{ route('usuarios.index') }}" class="card" data-path="/usuarios">
+                    <div class="card-inner">
+                        <div class="icon-bg gradient-1">
+                            <i data-lucide="users" class="icon"></i>
+                        </div>
+                        <h2 class="card-title">Usuarios</h2>
+                        <p class="card-desc"></p>
+                        <div class="card-footer">
+                            <span>Gestionar</span>
+                            <i data-lucide="arrow-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                </a>
                 {{-- Cotizaciones --}}
                 <a href="{{ route('cotizaciones') }}" class="card" data-path="/cotizaciones">
                     <div class="card-inner">
@@ -41,7 +55,7 @@
                             <i data-lucide="file-text" class="icon"></i>
                         </div>
                         <h2 class="card-title">Cotizaciones</h2>
-                        <p class="card-desc">Obtén estimados de proyectos</p>
+                        <p class="card-desc"></p>
                         <div class="card-footer">
                             <span>Explorar</span>
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
@@ -83,7 +97,7 @@
                 <a href="{{ route('mano.de.obra') }}" class="card" data-path="labour">
                     <div class="card-inner">
                         <div class="icon-bg gradient-2">
-                            <i data-lucide="users" class="icon"></i>
+                            <i data-lucide="Hard-Hat" class="icon"></i>
                         </div>
                         <h2 class="card-title">Mano de Obra</h2>
                         <p class="card-desc">Contrata trabajadores calificados</p>

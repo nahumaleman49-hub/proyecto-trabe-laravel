@@ -21,9 +21,9 @@
     </div>
 
     <div class="container mx-auto px-4 py-8">
-        <a href="{{ route('home') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
+        <a href="{{ auth()->user()->isAdmin() ? route('home') : route('dashboard') }}" class="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mb-8">
             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-            Volver al Inicio
+            Volver {{ auth()->user()->isAdmin() ? 'al Inicio' : 'al Dashboard' }}
         </a>
 
         @if(session('success'))
@@ -102,14 +102,17 @@
                                         <a href="{{ route('proyectos.modificar', $proyecto->ID_proyecto) }}" class="text-slate-600 hover:text-slate-800" title="Editar">
                                             <i data-lucide="edit" class="w-5 h-5"></i>
                                         </a>
-                                        <!-- eliminar un proyecto funcion incluida no visible para interaccion
+                                        @if(auth()->user()->isAdmin())
                                         <form action="{{ route('proyectos.eliminar', $proyecto->ID_proyecto) }}" method="POST" onsubmit="return confirm('¿Eliminar este proyecto?')" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-700" title="Eliminar">
                                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                                             </button>
-                                        </form> -->
+                                        </form> 
+                                        @else
+                                            <!-- no sale nada -->
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

@@ -198,10 +198,15 @@
             padding: 0;
         }
 
+<<<<<<< HEAD
 
         .totales-box {
             width: 100%;
             margin-left: auto;
+=======
+        .totales-box {
+            width: 100%;
+>>>>>>> d29744fa349c2d6836f0baf9df9c1a9e6ffc10a0
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
@@ -354,14 +359,20 @@
         </thead>
         <tbody>
             @foreach($cotizacion->detallesMateriales as $i => $det)
+            @php
+                $material = $det->abastecimiento->materiales ?? null;
+                $proveedor = $det->abastecimiento->proveedor ?? null;
+                $precioUnit = $det->abastecimiento->precio ?? 0;
+                $subtotal = $det->cantidad * $precioUnit;
+            @endphp
             <tr>
-                <td class="text-muted">{{ $i + 1 }}</td>
-                <td>{{ $det->abastecimiento->materiales->nombre ?? 'N/A' }}</td>
-                <td class="text-muted">{{ $det->abastecimiento->proveedor->nombre ?? 'N/A' }}</td>
-                <td class="text-muted">{{ $det->abastecimiento->materiales->medidas ?? '—' }}</td>
-                <td class="text-right">{{ $det->cantidad }}</td>
-                <td class="text-right">${{ number_format($det->abastecimiento->precio ?? 0, 2) }}</td>
-                <td class="text-right">${{ number_format($det->cantidad * ($det->abastecimiento->precio ?? 0), 2) }}</td>
+                <td>{{ $i+1 }}</td>
+                <td>{{ $material->nombre ?? 'N/A' }}</td>
+                <td>{{ $proveedor->nombre ?? 'N/A' }}</td>
+                <td>{{ $material->medidas ?? '—' }}</td>
+                <td class="text-right">{{ number_format($det->cantidad, 2) }}</td>
+                <td class="text-right">$ {{ number_format($precioUnit, 2) }}</td>
+                <td class="text-right"><strong>$ {{ number_format($subtotal, 2) }}</strong></td>
             </tr>
             @endforeach
         </tbody>
@@ -396,13 +407,16 @@
         <tbody>
             @foreach($cotizacion->detallesManoObra as $i => $det)
             <tr>
-                <td class="text-muted">{{ $i + 1 }}</td>
-                <td>{{ $det->manoObra->servicio->nombre ?? 'N/A' }}</td>
-                <td class="text-muted">{{ $det->manoObra->proveedor->nombre ?? 'N/A' }}</td>
-                <td class="text-muted">{{ $det->manoObra->unidad ?? '—' }}</td>
-                <td class="text-right">{{ $det->cantidad }}</td>
-                <td class="text-right">${{ number_format($det->manoObra->precio ?? 0, 2) }}</td>
-                <td class="text-right">${{ number_format($det->cantidad * ($det->manoObra->precio ?? 0), 2) }}</td>
+                <td style="color:#94a3b8;">{{ $i + 1 }}</td>
+                <td>
+                    <div class="item-nombre">{{ $det->manoObra->servicio->nombre ?? 'N/A' }}</div>
+                    <div class="item-sub">{{ $det->manoObra->unidad ?? '' }}</div>
+                </td>
+                <td style="color:#475569;">{{ $det->manoObra->proveedor->nombre ?? 'N/A' }}</td>
+                <td style="color:#64748b;">{{ $det->manoObra->unidad ?? '—' }}</td>
+                <td class="r">{{ number_format($det->cantidad, 2) }}</td>
+                <td class="r" style="color:#475569;">$ {{ number_format($det->precio_unit, 2) }}</td>
+                <td class="r"><strong>$ {{ number_format($det->cantidad * $det->precio_unit, 2) }}</strong></td>
             </tr>
             @endforeach
         </tbody>
@@ -432,9 +446,27 @@
                             <td>Subtotal Servicios</td>
                             <td>${{ number_format($totalServicios, 2) }}</td>
                         </tr>
+                        @if($costoEquipo > 0)
+                        <tr>
+                            <td>Costo de Equipo</td>
+                            <td>${{ number_format($costoEquipo, 2) }}</td>
+                        </tr>
+                        @endif
+                        @if($porcGastos > 0)
+                        <tr>
+                            <td>Gastos Generales ({{ $porcGastos }}%)</td>
+                            <td>${{ number_format($montoGastos, 2) }}</td>
+                        </tr>
+                        @endif
+                        @if($porcMargen > 0)
+                        <tr>
+                            <td>Margen de Ganancia ({{ $porcMargen }}%)</td>
+                            <td>${{ number_format($montoMargen, 2) }}</td>
+                        </tr>
+                        @endif
                         <tr class="total-final">
                             <td>TOTAL</td>
-                            <td>${{ number_format($cotizacion->total, 2) }}</td>
+                            <td>${{ number_format($totalFinal, 2) }}</td>
                         </tr>
                     </table>
                 </div>

@@ -18,11 +18,18 @@ class cotizacion extends Model
         'fk_id_proyecto',
         'fecha',
         'estado',
-        'total'
+        'total',
+        'costo_equipo',        
+        'gastos_generales',   
+        'margen_ganancia',
     ];
     protected $casts = [
     'fecha' => 'date',
     'estado' => 'integer',
+    'total' => 'float',
+    'costo_equipo' => 'float',
+    'gastos_generales' => 'float',
+    'margen_ganancia' => 'float',
     ];
 
     public function proyecto()
@@ -30,17 +37,17 @@ class cotizacion extends Model
         return $this->belongsTo(proyecto::class, 'fk_id_proyecto', 'ID_proyecto');
     }
 
-    // Relación con Materiales (Abastecimiento)
     public function detallesMateriales()
-    {
-        return $this->hasMany(detallecotizacion_abastecimiento::class, 'fk_id_cotizacion', 'ID_cotizacion');
-    }
+{
+    return $this->hasMany(detallecotizacion_abastecimiento::class, 'fk_id_cotizacion', 'ID_cotizacion');
+}
 
-    // Relación con Servicios (Mano de Obra)
-    public function detallesManoObra()
-    {
-        return $this->hasMany(detallecotizacion::class, 'fk_id_cotizacion', 'ID_cotizacion');
-    }
+// Relación para servicios (usando la tabla detallecotizacion)
+public function detallesManoObra()
+{
+    return $this->hasMany(detallecotizacion::class, 'fk_id_cotizacion', 'ID_cotizacion')
+                ->whereNotNull('fk_id_mano_obra');
+}
 
     // Mantengo esta por si la usas en otras vistas generales
     public function detalles()
